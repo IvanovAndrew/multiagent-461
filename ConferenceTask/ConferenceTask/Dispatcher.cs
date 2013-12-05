@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Drawing.Drawing2D;
-using System.Drawing.Text;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Runtime.Serialization.Formatters;
 
 namespace ConferenceTask
 {
@@ -15,7 +9,6 @@ namespace ConferenceTask
         /// row - reports
         /// column - listeners
         /// </summary>
- 
         private readonly int[,] _matrix;
 
         /// <summary>
@@ -52,10 +45,9 @@ namespace ConferenceTask
                 }
             }
         }
-
+        
         /// <summary>
-        /// This method creates final shedule. 
-        /// "Main"
+        /// Returns final shedule. 
         /// </summary>
         public void CreateShedule()
         {
@@ -64,24 +56,30 @@ namespace ConferenceTask
             CreateFirstShedule(first, second);
         }
 
-        private void CreateFirstShedule(int one, int two)
+        /// <summary>
+        /// Creates first version of shedule
+        /// </summary>
+        /// <param name="first">First listener</param>
+        /// <param name="second">Second listener</param>
+        private void CreateFirstShedule(int first, int second)
         {
-            var topReportsForOne = GetTopReports(one);
-            var topRepostsForTwo = GetTopReports(two);
+            var topReportsForOne = GetTopReports(first);
+            var topRepostsForTwo = GetTopReports(second);
 
-            for (var i = 0; i < Times; i++)
+            for (int i = 0; i < Times; i++)
             {
                 _shedule[0, i] = topReportsForOne[i];
             }
 
             var usedReports = new List<int>(topReportsForOne);
             int count = 0;
-            foreach (var report in topRepostsForTwo)
+            foreach (int report in topRepostsForTwo)
             {
                 if (topReportsForOne.Contains(report))
                     continue;
                 
                 usedReports.Add(report);
+
                 while (_shedule[0, count] == report)
                 {
                     count++;
@@ -90,13 +88,13 @@ namespace ConferenceTask
             }
 
             // fill by unused reports
-            for (var report = 0; report < Reports; report++)
+            for (int report = 0; report < Reports; report++)
             {
                 if (!usedReports.Contains(report))
                 {
-                    for (var time = 0; time < Times; time++)
+                    for (int time = 0; time < Times; time++)
                     {
-                        for (var flow = 1; flow < Flows; flow++)
+                        for (int flow = 1; flow < Flows; flow++)
                         {
                             if (_shedule[time, flow] < 0)
                             {
@@ -110,15 +108,20 @@ namespace ConferenceTask
             
         }
 
-        public List<int> GetTopReports(int listener)
+        /// <summary>
+        /// Returns top $Times$ reports for the listener
+        /// </summary>
+        /// <param name="listener">Concrete listener</param>
+        /// <returns>List of top $Times$ reports for the listener</returns>
+        private List<int> GetTopReports(int listener)
         {
-            //first element is number of report
+            // first element is number of report
             // second element is weight of report
             // sorted by descending
             var topReports = new List <KeyValuePair<int, int>>();
             int lastElem = Times - 1;
 
-            for (var i = 0; i < Reports; i++)
+            for (int i = 0; i < Reports; i++)
             {
                 if (i < Times)
                 {

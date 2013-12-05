@@ -24,7 +24,6 @@ namespace ConferenceTask
 
         private static readonly int[,] Matrix = new int[Reports,Listeners];
 
-
         public static readonly string[] Separator = new[]{" "};
 
         /// <summary>
