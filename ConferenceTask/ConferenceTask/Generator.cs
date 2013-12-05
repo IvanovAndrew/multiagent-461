@@ -16,13 +16,13 @@ namespace ConferenceTask
         /// <summary>
         /// количество докладов
         /// </summary>
-        public const int Topics = 30;
+        public const int Reports = 30;
         /// <summary>
         /// путь к файлу с входной матрицей
         /// </summary>
         public const string FilePath = "input.txt";
 
-        private static readonly int[,] Matrix = new int[100,30];
+        private static readonly int[,] Matrix = new int[Reports,Listeners];
 
 
         public static readonly string[] Separator = new[]{" "};
@@ -35,9 +35,9 @@ namespace ConferenceTask
             var random = new Random();
             using (var writer = new StreamWriter(FilePath))
             {
-                for (int listener = 0; listener < Listeners; listener++)
+                for (int topic = 0; topic < Reports; topic++)
                 {
-                    for (int topic = 0; topic < Topics; topic++)
+                    for (int listener = 0; listener < Listeners; listener++)
                     {
                         writer.Write("{0}", random.Next(10) + Separator[0]);
                     }
@@ -54,20 +54,20 @@ namespace ConferenceTask
         /// </returns>
         public static int[,] ReadMatrixFromFile()
         {
-            var matrix = new int[Listeners,Topics];
+            var matrix = new int[Reports, Listeners];
             using (var reader = new StreamReader(FilePath))
             {
-                for (int listener = 0; listener < Listeners; listener++)
+                for  (int topic = 0; topic < Reports; topic++) 
                 {
                     string line;
                     if ((line = reader.ReadLine()) == null) throw new Exception("Incorrect file!");
                     var inputArray = line.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
-                    if(inputArray.Length != Topics) throw  new Exception("Incorrect file!");
-                    for (int topic = 0; topic < Topics; topic++)
+                    if(inputArray.Length != Reports) throw  new Exception("Incorrect file!");
+                    for (int listener = 0; listener < Listeners; listener++)
                     {
                         int res;
-                        int.TryParse(inputArray[topic], out res);
-                        matrix[listener, topic] = res;
+                        int.TryParse(inputArray[listener], out res);
+                        matrix[topic, listener] = res;
                     }
                 }
             }
