@@ -7,10 +7,16 @@ namespace ConferenceTask
 {
     static class Program
     {
+        /// <summary>
+        /// Главная точка входа для приложения.
+        /// </summary>
+        [STAThread]
         static void Main()
         {
-            Generator.GenerateMatrix();
-            var testMatrix = Generator.ReadMatrixFromFile();
+            Application.EnableVisualStyles();
+
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new Form1());
         }
     }
 }
