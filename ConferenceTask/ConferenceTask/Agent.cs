@@ -7,42 +7,35 @@ namespace ConferenceTask
     {
         public int Id;
         private readonly int[] _ratings;
-        
-        /// <summary>
-        /// Number of slot of time
-        /// </summary>
-        private readonly int _times;
 
         /// <summary>
         /// Minimal threshold
         /// </summary>
         private readonly int _minBound;
-
-        private readonly int Flows = 3;
         
         /// <summary>
-        /// Key is report
-        /// Value is flow number
-        /// 
-        /// First dimension is time
-        /// Second dimension is numberof priorities
+        /// First dimension is section number
+        /// Second dimension is report rating
         /// Sorted by descending
         /// </summary>
-        private readonly KeyValuePair<int,int>[][] _analisedShedule;
+        private readonly Report[][] _analisedShedule;
 
-        public Agent(int id, int[] ratings, int times)
+        public Agent(int id, int[] ratings)
         {
             Id = id;
             _ratings = ratings;
-            _times = times;
-            _analisedShedule = new KeyValuePair<int, int>[_times][];
+            _analisedShedule = new Report [Shedule.ReportsCountInSection][];
             _minBound = CalculateBound();
         }
 
+        /// <summary>
+        /// Calculates the lowest threshold
+        /// </summary>
+        /// <returns></returns>
         private int CalculateBound()
         {
             var temp = _ratings.OrderByDescending(elem => elem).ToList();
-            return temp[_times];
+            return temp[Shedule.ReportsCountInSection];
         }
 
         /// <summary>
@@ -51,7 +44,7 @@ namespace ConferenceTask
         /// <returns></returns>
         public bool IsGoodShedule()
         {
-            for (int i = 0; i < _times; i++)
+            for (int i = 0; i < Shedule.ReportsCountInSection; i++)
             {
                 if (IsGoodTime(i)) continue;
                     return false;
@@ -66,15 +59,15 @@ namespace ConferenceTask
         /// <returns></returns>
         private bool IsGoodTime(int time)
         {
-            var report = _analisedShedule[time][0].Key;
-            return _ratings[report] >= _minBound;
+            var report = _analisedShedule[time][0];
+            return _ratings[report.Id] >= _minBound;
         }
 
-        public int[,] GetShedule(int[,] shedule)
+        public Shedule GetShedule(Shedule shedule)
         {
-            int[,] newShedule;
+            var newShedule = new Shedule();
             newShedule = shedule;
-            for (int time = 0; time < _times; time++)
+            for (int time = 0; time < Shedule.ReportsCountInSection; time++)
             {
                 if (IsGoodTime(time)) continue;
 
@@ -87,16 +80,15 @@ namespace ConferenceTask
         {
             var max = -1;
             var index = -1;
-            for (int i = 0; i < _times; i++)
+            for (int i = 0; i < Shedule.ReportsCountInSection; i++)
             {
-                var report = _analisedShedule[i][1].Key;
-                if (_ratings[report] > max)
+                var report = _analisedShedule[i][1];
+                if (_ratings[report.Id] > max)
                 {
-                    max = _ratings[report];
+                    max = _ratings[report.Id];
                     index = i;
                 }
             }
-
             return index;
         }
 
@@ -105,52 +97,51 @@ namespace ConferenceTask
         /// </summary>
         /// <param name="badTime"></param>
         /// <param name="shedule">planning shedule</param>
-        private void ChangeShedule(int badTime, int[,] shedule)
+        private void ChangeShedule(int badTime, Shedule shedule)
         {
             int index = GetSecondTopIndex();
 
-            // replace two reports
             var badReport = _analisedShedule[badTime][2];
             var goodReport = _analisedShedule[index][1];
 
-            // replace two reports in main shedule
-            shedule[badTime, badReport.Value] = goodReport.Key;
-            shedule[index, goodReport.Value] = badReport.Key;
+            shedule.Reports.Remove(badReport);
+            shedule.Reports.Remove(goodReport);
+
+            // do magic
+            var tempBadNumbInSect = badReport.NumberInSection;
+            var tempBadSecNumb = badReport.SectionNumber;
+
+            badReport.NumberInSection = goodReport.NumberInSection;
+            badReport.SectionNumber = goodReport.SectionNumber;
+
+            goodReport.NumberInSection = tempBadNumbInSect;
+            goodReport.SectionNumber = tempBadSecNumb;
+
+            // end do magic
+
+            shedule.Reports.Add(badReport);
+            shedule.Reports.Add(goodReport);
 
             // repalce two reports in analised shedule
-            _analisedShedule[badTime][2] = new KeyValuePair<int, int>(badReport.Key, goodReport.Value);
-            _analisedShedule[index][1] = new KeyValuePair<int, int>(goodReport.Key, badReport.Value);
+            _analisedShedule[badTime][2] = goodReport;
+            _analisedShedule[index][1] = badReport;
         }
 
         /// <summary>
         /// Creates shedule which reports are sorted by descending on each line
         /// </summary>
         /// <param name="shedule">current shedule</param>
-        public void AnaliseShedule(int[,] shedule)
+        public void AnaliseShedule(Shedule shedule)
         {
-            for (int i = 0; i < _times; i++)
+            foreach (Report report in shedule.Reports)
             {
-                _analisedShedule[i] = OrderLineByPriorityDescending(i, shedule);
+                _analisedShedule[report.NumberInSection][report.SectionNumber] = report;
             }
-        }
 
-        /// <summary>
-        /// creates line of analised shedule. 
-        /// sorted in descending order of priority.
-        /// </summary>
-        /// <param name="time"></param>
-        /// <param name="shedule"></param>
-        /// <returns>sorted array by descending</returns>
-        private KeyValuePair<int, int>[] OrderLineByPriorityDescending (int time, int[,] shedule)
-        {
-            var priorities = new List<KeyValuePair<int, int>>();
-
-            for (int i = 0; i < Flows; i++)
+            for (int i = 0; i < Shedule.ReportsCountInSection; i++)
             {
-                var report = shedule[time, i];
-                priorities.Add(new KeyValuePair<int, int>(report, i));
+                _analisedShedule[i] = _analisedShedule[i].OrderByDescending(elem => _ratings[elem.Id]).ToArray();
             }
-            return priorities.OrderByDescending(elem => _ratings[elem.Key]).ToArray();
         }
     }
 }

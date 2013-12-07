@@ -12,7 +12,7 @@ namespace ConferenceTask
         /// <summary>
         /// количество потоков
         /// </summary>
-        public const int Flows = 3;
+        public const int Sections = 3;
         /// <summary>
         /// количество докладов
         /// </summary>

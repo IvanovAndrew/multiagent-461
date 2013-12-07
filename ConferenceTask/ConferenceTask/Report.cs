@@ -16,7 +16,7 @@ namespace ConferenceTask
         //порядковый номер доклада в секции
         public int NumberInSection { get; set; }
         //общий порядковый номер доклада
-        public int Number { get; set; }
+        public int Id { get; set; }
 
         private const int NameMaxLength = 10;
         private const int NameMinLength = 3;
@@ -26,6 +26,7 @@ namespace ConferenceTask
         /// </summary>
         /// <returns>
         /// имя объекту! Андрей, если в будущем буду проблемы с выбором имени ребенка, обращайтесь
+        /// - OK :)
         /// </returns>
         public string GenerateName()
         {
