@@ -61,7 +61,7 @@ namespace ConferenceTask
                     string line;
                     if ((line = reader.ReadLine()) == null) throw new Exception("Incorrect file!");
                     var inputArray = line.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
-                    if(inputArray.Length != Reports) throw  new Exception("Incorrect file!");
+                    if(inputArray.Length != Listeners) throw  new Exception("Incorrect file!");
                     for (int listener = 0; listener < Listeners; listener++)
                     {
                         int res;
