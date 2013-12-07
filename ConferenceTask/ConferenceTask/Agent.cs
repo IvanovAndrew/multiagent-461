@@ -7,8 +7,18 @@ namespace ConferenceTask
     {
         public int Id;
         private readonly int[] _ratings;
+        
+        /// <summary>
+        /// Number of slot of time
+        /// </summary>
         private readonly int _times;
+
+        /// <summary>
+        /// Minimal threshold
+        /// </summary>
         private readonly int _minBound;
+
+        private readonly int Flows = 3;
         
         /// <summary>
         /// Key is report
@@ -135,7 +145,7 @@ namespace ConferenceTask
         {
             var priorities = new List<KeyValuePair<int, int>>();
 
-            for (int i = 0; i < _times; i++)
+            for (int i = 0; i < Flows; i++)
             {
                 var report = shedule[time, i];
                 priorities.Add(new KeyValuePair<int, int>(report, i));
