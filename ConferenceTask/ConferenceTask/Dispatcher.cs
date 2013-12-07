@@ -54,6 +54,12 @@ namespace ConferenceTask
             var first = 0;
             var second = 1;
             CreateFirstShedule(first, second);
+            CreateFirstCoalition();
+        }
+
+        public void CreateFirstCoalition()
+        {
+            for(int i = 2; i < )
         }
 
         /// <summary>
