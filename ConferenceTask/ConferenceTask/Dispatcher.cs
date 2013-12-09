@@ -87,6 +87,15 @@ namespace ConferenceTask
                 agent.ReceiveMessage(msg);
                 msg = agent.GetAnswer();
             }
+
+            if (msg.Type == MessageType.Type.YES)
+            {
+                _coalition.Members.Add(agent);
+            }
+            else
+            {
+                _opposition.Members.Add(agent);
+            }
         }
 
     }
