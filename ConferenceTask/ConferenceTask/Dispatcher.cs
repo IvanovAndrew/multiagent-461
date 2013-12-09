@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows.Forms;
+using ConferenceTask.MAS;
+using Message = ConferenceTask.MAS.Message;
 
 namespace ConferenceTask
 {
@@ -13,22 +16,16 @@ namespace ConferenceTask
 
         private readonly Dictionary<int, Agent> _agents = new Dictionary<int, Agent>();
         
-        private List<Agent> _coalition = new List<Agent>();
-        private List<Agent> _opposition = new List<Agent>();
-
-        public Shedule _shedule = new Shedule();
-
-        private const float Quorum = (float) 0.5;
+        private Coalition _coalition = new Coalition();
+        private Coalition _opposition = new Coalition();
 
         public Dispatcher(int[,] matrix)
         {
             _matrix = matrix;
-
-            InitialFillShedule();
             CreatesAgents();
         }
 
-        private int InitialFillShedule()
+        private Shedule InitialFillShedule()
         {
             //todo Alex, you must create transformation from matrix to List<Report>. #RightNow!
         }
@@ -58,58 +55,39 @@ namespace ConferenceTask
             foreach (KeyValuePair<int, Agent> pair in _agents)
             {
                 var agent = pair.Value;
-                agent.AnaliseShedule(_shedule);
 
-                if (_coalition.Count == 0)
+                if (_coalition.Members.Count == 0)
                 {
+                    var shedule = InitialFillShedule();
+                    agent.AnaliseShedule(shedule);
+                    
                     if (agent.IsGoodShedule())
                         continue;
-                    _shedule = agent.GetShedule(_shedule);
-                    _coalition.Add(agent);
+                    shedule = agent.GetShedule(shedule);
+                    _coalition = new Coalition(shedule);
+                    _coalition.Members.Add(agent);
+                    continue;
                 }
 
-                else
-                {
-                    if (agent.IsGoodShedule())
-                    {
-                        _coalition.Add(agent);
-                    }
-                    else
-                    {
-                        var newShedule = agent.GetShedule(_shedule);
-                        if (Voting(newShedule))
-                        {
-                            _shedule = newShedule;
-                            _coalition.Add(agent);
-                        }
-                        else
-                        {
-                            _opposition.Add(agent);
-                        }
-                    }
-                }
+
+                Negotiation(agent);
             }
         }
 
-        /// <summary>
-        /// voting among the agents from population.
-        /// if not less than half of the approved agents, it returns true
-        /// </summary>
-        /// <param name="newShedule"></param>
-        /// <returns></returns>
-        private bool Voting(Shedule newShedule)
+        private void Negotiation(Agent agent)
         {
-            int count = 0;
-            foreach (Agent agent in _coalition)
+            var msg = new Message();
+            
+            msg.Type = MessageType.Type.NEWAGENT;
+            while (!(msg.Type == MessageType.Type.NO ||
+                    msg.Type == MessageType.Type.YES))
             {
-                agent.AnaliseShedule(newShedule);
-                if (agent.IsGoodShedule())
-                {
-                    count++;
-                }
+                _coalition.ReceiveMessage(msg);
+                msg = _coalition.GetAnswer();
+                agent.ReceiveMessage(msg);
+                msg = agent.GetAnswer();
             }
-
-            return count >= _coalition.Count*Quorum;
         }
+
     }
 }
