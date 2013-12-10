@@ -69,7 +69,6 @@ namespace ConferenceTask
                     continue;
                 }
 
-
                 Negotiation(agent);
             }
         }
@@ -79,8 +78,8 @@ namespace ConferenceTask
             var msg = new Message();
             
             msg.Type = MessageType.Type.NEWAGENT;
-            while (!(msg.Type == MessageType.Type.NO ||
-                    msg.Type == MessageType.Type.YES))
+            while (!(msg.Type == MessageType.Type.REJECTAGENT ||
+                    msg.Type == MessageType.Type.ACCEPTAGENT))
             {
                 _coalition.ReceiveMessage(msg);
                 msg = _coalition.GetAnswer();
@@ -88,7 +87,7 @@ namespace ConferenceTask
                 msg = agent.GetAnswer();
             }
 
-            if (msg.Type == MessageType.Type.YES)
+            if (msg.Type == MessageType.Type.ACCEPTAGENT)
             {
                 _coalition.Members.Add(agent);
             }

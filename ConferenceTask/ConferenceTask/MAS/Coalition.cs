@@ -65,11 +65,11 @@ namespace ConferenceTask.MAS
                     if (Voting(msg.Shedule))
                     {
                         _shedule = msg.Shedule;
-                        msg.Type = MessageType.Type.YES;
+                        msg.Type = MessageType.Type.ACCEPTAGENT;
                     }
                     else
                     {
-                        msg.Type = MessageType.Type.NO;
+                        msg.Type = MessageType.Type.REJECTAGENT;
                     }
                     break;
 

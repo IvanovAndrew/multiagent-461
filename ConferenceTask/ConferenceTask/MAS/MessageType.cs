@@ -4,7 +4,7 @@
     {
         public enum Type
         {
-            NEWAGENT, CURRENTSHEDULE, MODIFIEDSHEDULE, YES, NO
+            NEWAGENT, CURRENTSHEDULE, MODIFIEDSHEDULE, ACCEPTAGENT, REJECTAGENT
         };
     }
 }

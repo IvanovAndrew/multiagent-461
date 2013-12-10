@@ -163,7 +163,7 @@ namespace ConferenceTask.MAS
                     AnaliseShedule(msg.Shedule);
                     if (IsGoodShedule())
                     {
-                        answer.Type = MessageType.Type.YES;
+                        answer.Type = MessageType.Type.ACCEPTAGENT;
                     }
                     else
                     {
@@ -173,8 +173,8 @@ namespace ConferenceTask.MAS
                     break;
 
                 // maybe it unnecessary
-                case MessageType.Type.NO:
-                case MessageType.Type.YES:
+                case MessageType.Type.REJECTAGENT:
+                case MessageType.Type.ACCEPTAGENT:
                     answer = msg;
                     break;
 
