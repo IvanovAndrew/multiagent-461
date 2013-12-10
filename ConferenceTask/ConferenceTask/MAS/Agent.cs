@@ -26,7 +26,12 @@ namespace ConferenceTask.MAS
         {
             Id = id;
             _ratings = ratings;
-            _analisedShedule = new Report [Shedule.ReportsCountInSection][];
+            _analisedShedule = new Report[Shedule.ReportsCountInSection][];
+            for (int i = 0; i < Shedule.ReportsCountInSection; i++)
+            {
+                _analisedShedule[i] = new Report[Shedule.Sections];
+            }
+            
             _minBound = CalculateBound();
         }
 
