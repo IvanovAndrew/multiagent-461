@@ -72,5 +72,17 @@ namespace ConferenceTask
             }
             return matrix;
         }
+
+        public static string GenerateName(Random random)
+        {
+            var length = random.Next(3, 10);
+            var name = "";
+            for (var letter = 0; letter < length; letter++)
+            {
+                var ch = (char)('а' + random.Next(32));
+                name += ch;
+            }
+            return name;
+        }
     }
 }

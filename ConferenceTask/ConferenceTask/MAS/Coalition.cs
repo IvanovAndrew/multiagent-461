@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 
 namespace ConferenceTask.MAS
 {
@@ -10,16 +9,17 @@ namespace ConferenceTask.MAS
 
         private const float Quorum = (float)0.5;
         private Shedule _shedule;
-        private Message answer;
+        private Message _answer;
 
         public Coalition(Shedule shedule)
         {
+            Members = new List<Agent>();
             _shedule = shedule;
         }
 
         public Coalition()
         {
-            
+            Members = new List<Agent>();
         }
 
         /// <summary>
@@ -46,18 +46,18 @@ namespace ConferenceTask.MAS
         #region ICommuncation members
         public Message GetAnswer()
         {
-            return answer;
+            return _answer;
         }
         
         public void ReceiveMessage(Message msg)
         {
-            answer = new Message();
+            _answer = new Message();
             switch (msg.Type)
             {
                 //if received message from new agent then send current shedule
                 case MessageType.Type.NEWAGENT:
-                    answer.Type = MessageType.Type.CURRENTSHEDULE;
-                    answer.Shedule = _shedule;
+                    _answer.Type = MessageType.Type.CURRENTSHEDULE;
+                    _answer.Shedule = _shedule;
                     break;
 
                 // if received the modificated shedule then do voting. 

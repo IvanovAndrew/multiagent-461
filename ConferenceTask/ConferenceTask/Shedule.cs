@@ -13,5 +13,10 @@ namespace ConferenceTask
 
         //список докладов
         public List<Report> Reports { get; set; }
+
+        public Shedule()
+        {
+            Reports = new List<Report>();
+        }
     }
 }

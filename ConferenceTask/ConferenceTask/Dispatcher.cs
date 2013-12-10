@@ -27,7 +27,20 @@ namespace ConferenceTask
 
         private Shedule InitialFillShedule()
         {
-            //todo Alex, you must create transformation from matrix to List<Report>. #RightNow!
+            var shedule = new Shedule();
+            var random = new Random();
+            for (int reportId = 0; reportId < Generator.Reports; reportId++)
+            {
+                var report = new Report
+                    {
+                        Id = reportId,
+                        Name = Generator.GenerateName(random),
+                        SectionNumber = reportId/10,
+                        NumberInSection = reportId%10
+                    };
+                shedule.Reports.Add(report);
+            }
+            return shedule;
         }
 
         /// <summary>
