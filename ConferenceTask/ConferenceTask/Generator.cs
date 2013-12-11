@@ -8,7 +8,7 @@ namespace ConferenceTask
         /// <summary>
         /// количество слушателей
         /// </summary>
-        public const int Listeners = 100;
+        public const int Listeners = 5;
         /// <summary>
         /// количество потоков
         /// </summary>
@@ -16,7 +16,7 @@ namespace ConferenceTask
         /// <summary>
         /// количество докладов
         /// </summary>
-        public const int Reports = 30;
+        public const int Reports = 6;
         /// <summary>
         /// путь к файлу с входной матрицей
         /// </summary>

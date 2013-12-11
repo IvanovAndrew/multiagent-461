@@ -10,9 +10,9 @@ namespace ConferenceTask
             Generator.GenerateMatrix();
         }
 
-        private void FillTable(Shedule shedule)
+        private void FillTable(Schedule schedule)
         {
-            foreach (var report in shedule.Reports)
+            foreach (var report in schedule.Reports)
             {
                 var control = new Label {Text = string.Format("{0}, id = {1}", report.Name, report.Id)};
                 sheduleTable.Controls.Add(control, report.SectionNumber + 1, report.NumberInSection + 1);
@@ -40,7 +40,7 @@ namespace ConferenceTask
 
             var dispatcher = new Dispatcher(Generator.ReadMatrixFromFile());
 
-            FillTable(dispatcher.CreateShedule());
+            FillTable(dispatcher.CreateSchedule());
         }
 
         private void saveFileDialog1_FileOk(object sender, System.ComponentModel.CancelEventArgs e)

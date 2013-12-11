@@ -6,7 +6,7 @@ namespace ConferenceTask.MAS
     public class Agent : ICommunication
     {
         public int Id;
-        private readonly int[] _ratings;
+        private readonly int[] _reportRatings;
 
         /// <summary>
         /// Minimal threshold
@@ -22,14 +22,14 @@ namespace ConferenceTask.MAS
 
         private Message answer;
 
-        public Agent(int id, int[] ratings)
+        public Agent(int id, int[] reportRatings)
         {
             Id = id;
-            _ratings = ratings;
-            _analisedShedule = new Report[Shedule.ReportsCountInSection][];
-            for (int i = 0; i < Shedule.ReportsCountInSection; i++)
+            _reportRatings = reportRatings;
+            _analisedShedule = new Report[Schedule.ReportsCountInSection][];
+            for (int i = 0; i < Schedule.ReportsCountInSection; i++)
             {
-                _analisedShedule[i] = new Report[Shedule.Sections];
+                _analisedShedule[i] = new Report[Schedule.Sections];
             }
             
             _minBound = CalculateBound();
@@ -41,17 +41,17 @@ namespace ConferenceTask.MAS
         /// <returns></returns>
         private int CalculateBound()
         {
-            var temp = _ratings.OrderByDescending(elem => elem).ToList();
-            return temp[Shedule.ReportsCountInSection];
+            var temp = _reportRatings.OrderByDescending(elem => elem).ToList();
+            return temp[Schedule.ReportsCountInSection];
         }
 
         /// <summary>
-        /// if agent likes current shedule then returns true
+        /// if agent likes current Schedule then returns true
         /// </summary>
         /// <returns></returns>
         public bool IsGoodShedule()
         {
-            for (int i = 0; i < Shedule.ReportsCountInSection; i++)
+            for (int i = 0; i < Schedule.ReportsCountInSection; i++)
             {
                 if (IsGoodTime(i)) continue;
                     return false;
@@ -67,14 +67,14 @@ namespace ConferenceTask.MAS
         private bool IsGoodTime(int time)
         {
             var report = _analisedShedule[time][0];
-            return _ratings[report.Id] >= _minBound;
+            return _reportRatings[report.Id] >= _minBound;
         }
 
-        public Shedule GetShedule(Shedule shedule)
+        public Schedule GetMyBestShedule(Schedule schedule)
         {
-            var newShedule = new Shedule();
-            newShedule = shedule;
-            for (int time = 0; time < Shedule.ReportsCountInSection; time++)
+            var newShedule = new Schedule();
+            newShedule = schedule;
+            for (int time = 0; time < Schedule.ReportsCountInSection; time++)
             {
                 if (IsGoodTime(time)) continue;
 
@@ -87,12 +87,12 @@ namespace ConferenceTask.MAS
         {
             var max = -1;
             var index = -1;
-            for (int i = 0; i < Shedule.ReportsCountInSection; i++)
+            for (int i = 0; i < Schedule.ReportsCountInSection; i++)
             {
                 var report = _analisedShedule[i][1];
-                if (_ratings[report.Id] > max)
+                if (_reportRatings[report.Id] > max)
                 {
-                    max = _ratings[report.Id];
+                    max = _reportRatings[report.Id];
                     index = i;
                 }
             }
@@ -103,16 +103,16 @@ namespace ConferenceTask.MAS
         /// Changed one report from "bad" time to "good" report 
         /// </summary>
         /// <param name="badTime"></param>
-        /// <param name="shedule">planning shedule</param>
-        private void ChangeShedule(int badTime, Shedule shedule)
+        /// <param name="schedule">planning Schedule</param>
+        private void ChangeShedule(int badTime, Schedule schedule)
         {
             int index = GetSecondTopIndex();
 
             var badReport = _analisedShedule[badTime][2];
             var goodReport = _analisedShedule[index][1];
 
-            shedule.Reports.Remove(badReport);
-            shedule.Reports.Remove(goodReport);
+            schedule.Reports.Remove(badReport);
+            schedule.Reports.Remove(goodReport);
 
             // do magic
             var tempBadNumbInSect = badReport.NumberInSection;
@@ -126,29 +126,40 @@ namespace ConferenceTask.MAS
 
             // end do magic
 
-            shedule.Reports.Add(badReport);
-            shedule.Reports.Add(goodReport);
+            schedule.Reports.Add(badReport);
+            schedule.Reports.Add(goodReport);
 
-            // repalce two reports in analised shedule
+            // repalce two reports in analised Schedule
             _analisedShedule[badTime][2] = goodReport;
             _analisedShedule[index][1] = badReport;
         }
 
         /// <summary>
-        /// Creates shedule which reports are sorted by descending on each line
+        /// Creates Schedule which reports are sorted by descending on each line
         /// </summary>
-        /// <param name="shedule">current shedule</param>
-        public void AnaliseShedule(Shedule shedule)
+        /// <param name="schedule">current Schedule</param>
+        public void AnaliseShedule(Schedule schedule)
         {
-            foreach (Report report in shedule.Reports)
+            foreach (Report report in schedule.Reports)
             {
                 _analisedShedule[report.NumberInSection][report.SectionNumber] = report;
             }
 
-            for (int i = 0; i < Shedule.ReportsCountInSection; i++)
+            for (int i = 0; i < Schedule.ReportsCountInSection; i++)
             {
-                _analisedShedule[i] = _analisedShedule[i].OrderByDescending(elem => _ratings[elem.Id]).ToArray();
+                _analisedShedule[i] = _analisedShedule[i].OrderByDescending(elem => _reportRatings[elem.Id]).ToArray();
             }
+        }
+
+        public int GetRating(Schedule schedule)
+        {
+            AnaliseShedule(schedule);
+            int res = 0;
+            for (int i = 0; i < Schedule.ReportsCountInSection; i++)
+            {
+                res += _reportRatings[_analisedShedule[i][0].Id];
+            }
+            return res;
         }
 
         #region ICommunication members
@@ -165,15 +176,15 @@ namespace ConferenceTask.MAS
                 // agent is new. 
                 // it exploring the current schedule
                 case MessageType.Type.CURRENTSHEDULE:
-                    AnaliseShedule(msg.Shedule);
+                    AnaliseShedule(msg.Schedule);
                     if (IsGoodShedule())
                     {
                         answer.Type = MessageType.Type.ACCEPTAGENT;
                     }
                     else
-                    {
+                    {           
                         answer.Type = MessageType.Type.MODIFIEDSHEDULE;
-                        answer.Shedule = GetShedule(msg.Shedule);
+                        answer.Schedule = GetMyBestShedule(msg.Schedule);
                     }
                     break;
 

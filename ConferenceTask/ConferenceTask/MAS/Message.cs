@@ -4,6 +4,6 @@
     {
         public MessageType.Type Type { get; set; }
 
-        public Shedule Shedule { get; set; }
+        public Schedule Schedule { get; set; }
     }
 }

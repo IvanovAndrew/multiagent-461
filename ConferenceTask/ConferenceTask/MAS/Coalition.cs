@@ -8,32 +8,27 @@ namespace ConferenceTask.MAS
         public List<Agent> Members { get; set; }
 
         private const float Quorum = (float)0.5;
-        private Shedule _shedule;
+        public Schedule Schedule { get; set; }
+    
         private Message _answer;
-
-        public Coalition(Shedule shedule)
-        {
-            Members = new List<Agent>();
-            _shedule = shedule;
-        }
 
         public Coalition()
         {
             Members = new List<Agent>();
         }
-
+        
         /// <summary>
         /// voting among the agents from population.
         /// if not less than half of the approved agents, it returns true
         /// </summary>
-        /// <param name="newShedule"></param>
+        /// <param name="newSchedule"></param>
         /// <returns></returns>
-        public bool Voting(Shedule newShedule)
+        public bool Voting(Schedule newSchedule)
         {
             int count = 0;
-            foreach (Agent agent in Members)
+            foreach (var agent in Members)
             {
-                agent.AnaliseShedule(newShedule);
+                agent.AnaliseShedule(newSchedule);
                 if (agent.IsGoodShedule())
                 {
                     count++;
@@ -54,17 +49,17 @@ namespace ConferenceTask.MAS
             _answer = new Message();
             switch (msg.Type)
             {
-                //if received message from new agent then send current shedule
+                //if received message from new agent then send current Schedule
                 case MessageType.Type.NEWAGENT:
                     _answer.Type = MessageType.Type.CURRENTSHEDULE;
-                    _answer.Shedule = _shedule;
+                    _answer.Schedule = Schedule;
                     break;
 
-                // if received the modificated shedule then do voting. 
+                // if received the modificated Schedule then do voting. 
                 case MessageType.Type.MODIFIEDSHEDULE:
-                    if (Voting(msg.Shedule))
+                    if (Voting(msg.Schedule))
                     {
-                        _shedule = msg.Shedule;
+                        Schedule = msg.Schedule;
                         _answer.Type = MessageType.Type.ACCEPTAGENT;
                     }
                     else
