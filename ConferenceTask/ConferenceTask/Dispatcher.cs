@@ -86,7 +86,7 @@ namespace ConferenceTask
                 }
 
                 //all agents are in coalition or opposition
-                if (_coalition.Schedule != BestSchedule && NewIsBetter(_coalition.Schedule))
+                if (/*_coalition.Schedule != BestSchedule &&*/ NewIsBetter(_coalition.Schedule))
                 {
                     count = 0;
                 }
@@ -121,6 +121,7 @@ namespace ConferenceTask
 
             _coalition.Members.Add(agent);
         }
+
 
         private bool NewIsBetter(Schedule schedule)
         {
