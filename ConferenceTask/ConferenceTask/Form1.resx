@@ -117,4 +117,31 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="pictureBox1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAAMYAAAApCAYAAABuiVYKAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAPPSURBVHhe7ZwLsoMgDEVdlwtyPa6mm+lirAhoREBM+Xs7
+        82beWAhwyTGgpMNCPsMwLNw/agf/Q4HWFRjuBsAFRdTDBwq0qgDLewFLq9ONfocqwALDZhywhEqOci0o
+        EA2MmLC0IBz62LcCScEwpUNU6duZehpdVjBiRhVs7ntyw/rGUhwMwFKfU6BHy1IlGIAltWt+l3kk76ym
+        D2nws0yn91njMn/11/q7aZE1DjvShPm9uDTJd2N7G5YytnrfeRkv79V0u6n1aQiMmLCkl7XmFgwolPOd
+        Hdt80asd8uzU33mUTj/OKyJcMGh/zHZc/UivbzMRI1QK7gY/1H7z5fQdfDjuvp9pWDYwLnd3cUk6pxsc
+        ehd/HjG0fTlvypaOFj7gEk9Ed2DgSdiNx1icX9fYI4DlaJAbDN9Sy7+UmlXEGedZLd8QMRLz7jfPjSpd
+        PAnTYOx343WnsDqoK2KclXQspXz7B+ceQy2TZMMGGGL7gj1GUUh04++Bxdxc3y2VyBLn4sDalo4adtu7
+        thuMpIxzqXSUcW7qE3tN90upf/TjwvJPm3nqGg7sfSrlA0NGG6HTuD26egKGe2+yL+m8T7LSKgUwHurb
+        LywPhXhUXAFDlm+PqhcoDDD+FJ0LShf7lWDtAEawVD0XBCzm7AKMnv39r7EBlr/ky14ZS6nskh8NcmEp
+        2OXXNA0wKptqwFLHhACMOubB2QsuKO/a3MefRIARX9PkFgFLconbOXaeXoq2WwAscecPESOunlVZ48JS
+        1SAKdQZgFBK+VLOAJUz5xGDYz87IczXio5JUxFGBPU9AnM2hR5lFOV9W2ZEzcK5HEmDoUYTCpzbDpiVf
+        KS4ovW/ui4BxOLA9m+yUtOI8mHZNrzylUFIALqc4y2WG5XN5fkuAJXlq6/UogMzYMp3aluzyMKtsdf6Z
+        2N5OaBrX9jP+BTPD+O5atubbYCkSMS5LKWPpRNMpb7PKaBqkWo5NHxWJ1mPL0tZdvkC+JPuy7h23dS4s
+        cXuRxloeMIxsseP8vl5K2SKGuuZJxZTbFJXpRTPBxnH7hQlxSYJF7GOPkcaTlNVeYMkDhjOH2LPHCN0X
+        KHB0FDqS62UU0BHHzFkulRmW1CsrNM4FpfTmvggYtqXUNKmfYqG/FrFPtO3pls3xxQMs43eM9uXVAYn/
+        N44q9K7OutQCLInBuJtR21Lqrg6+71GB2mABGD16WSdj4sISY/gAI4aKsJFNgVywFAYjm55oqFMFuKDc
+        be4BRqcO8+ZhcWGhmgGMN3vQi8YeAgvAeJFDYKhuBUxYAAa8BQrcKPADiWxDzzcCbp8AAAAASUVORK5C
+        YII=
+</value>
+  </data>
+  <metadata name="$this.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
 </root>
