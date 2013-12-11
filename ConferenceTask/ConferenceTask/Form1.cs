@@ -25,7 +25,7 @@ namespace ConferenceTask
             }
             for (int column = 1; column < 4; column++)
             {
-                var control = new Label {Text = string.Format("Секция №{0}", column + 1)};
+                var control = new Label {Text = string.Format("Секция №{0}", column)};
                 sheduleTable.Controls.Add(control, column, 0);
             }
         }
