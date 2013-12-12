@@ -8,7 +8,7 @@ namespace ConferenceTask
         /// <summary>
         /// количество слушателей
         /// </summary>
-        public const int Listeners = 5;
+        public const int Listeners = 1050;
         /// <summary>
         /// количество потоков
         /// </summary>
@@ -16,7 +16,7 @@ namespace ConferenceTask
         /// <summary>
         /// количество докладов
         /// </summary>
-        public const int Reports = 6;
+        public const int Reports = 30;
         /// <summary>
         /// путь к файлу с входной матрицей
         /// </summary>
@@ -75,7 +75,7 @@ namespace ConferenceTask
 
         public static string GenerateName(Random random)
         {
-            var length = random.Next(3, 10);
+            var length = random.Next(3, 8);
             var name = "";
             for (var letter = 0; letter < length; letter++)
             {

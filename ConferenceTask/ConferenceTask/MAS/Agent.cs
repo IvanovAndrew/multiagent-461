@@ -115,13 +115,13 @@ namespace ConferenceTask.MAS
             schedule.Reports.Remove(goodReport);
 
             // do magic
-            var tempBadNumbInSect = badReport.NumberInSection;
+            var tempBadNumbInSect = badReport.PositionInSection;
             var tempBadSecNumb = badReport.SectionNumber;
 
-            badReport.NumberInSection = goodReport.NumberInSection;
+            badReport.PositionInSection = goodReport.PositionInSection;
             badReport.SectionNumber = goodReport.SectionNumber;
 
-            goodReport.NumberInSection = tempBadNumbInSect;
+            goodReport.PositionInSection = tempBadNumbInSect;
             goodReport.SectionNumber = tempBadSecNumb;
 
             // end do magic
@@ -142,7 +142,7 @@ namespace ConferenceTask.MAS
         {
             foreach (Report report in schedule.Reports)
             {
-                _analisedShedule[report.NumberInSection][report.SectionNumber] = report;
+                _analisedShedule[report.PositionInSection][report.SectionNumber] = report;
             }
 
             for (int i = 0; i < Schedule.ReportsCountInSection; i++)

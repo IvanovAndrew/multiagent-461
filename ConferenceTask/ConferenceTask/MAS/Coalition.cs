@@ -70,7 +70,7 @@ namespace ConferenceTask.MAS
 
                 default:
                     throw new Exception("Incorrect message to coalition!");
-                    break;
+//                    break;
             }
         }
         #endregion

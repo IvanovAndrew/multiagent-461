@@ -14,8 +14,8 @@ namespace ConferenceTask
         {
             foreach (var report in schedule.Reports)
             {
-                var control = new Label {Text = string.Format("{0}, id = {1}", report.Name, report.Id)};
-                sheduleTable.Controls.Add(control, report.SectionNumber + 1, report.NumberInSection + 1);
+                var control = new Label {Text = string.Format("{0}, id = {1}", report.Name, report.Id+1)};
+                sheduleTable.Controls.Add(control, report.SectionNumber + 1, report.PositionInSection + 1);
             }
 
             for (int row = 1; row < 11; row++)

@@ -9,7 +9,7 @@ namespace ConferenceTask
         //номер секции, в которой находится доклад
         public int SectionNumber { get; set; }
         //порядковый номер доклада в секции
-        public int NumberInSection { get; set; }
+        public int PositionInSection { get; set; }
         //общий порядковый номер доклада
         public int Id { get; set; }
     }

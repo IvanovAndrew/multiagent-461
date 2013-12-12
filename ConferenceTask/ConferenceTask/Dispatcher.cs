@@ -37,8 +37,8 @@ namespace ConferenceTask
                 {
                     Id = reportId,
                     Name = Generator.GenerateName(random),
-                    SectionNumber = reportId/Schedule.ReportsCountInSection,
-                    NumberInSection = reportId%Schedule.ReportsCountInSection
+                    SectionNumber = reportId / Schedule.ReportsCountInSection,
+                    PositionInSection = reportId % Schedule.ReportsCountInSection
                 };
                 shedule.Reports.Add(report);
             }
@@ -68,25 +68,28 @@ namespace ConferenceTask
         public Schedule CreateSchedule()
         {
             int count = 0;
+            var oldOpposition = new List<Agent>();
             while (count < 5)
             {
+                oldOpposition = StartNewIteration(oldOpposition);
                 var schedule = new Schedule();
                 schedule = InitialFillShedule();
                 var random = new Random();
-                int firstId = random.Next(_agents.Count - 1);
+                int firstId = (oldOpposition.Count != 0) 
+                        ? random.Next(oldOpposition.Count - 1)
+                        : random.Next(_agents.Count - 1);
 
                 FirstAgentInCoalition(_agents[firstId], schedule);
 
-                foreach (var pair in _agents)
+                foreach (var agent in _agents.Values)
                 {
-                    Agent agent = pair.Value;
-
+                    if (agent.Id == firstId) continue;
 
                     Negotiation(agent);
                 }
 
                 //all agents are in coalition or opposition
-                if (/*_coalition.Schedule != BestSchedule &&*/ NewIsBetter(_coalition.Schedule))
+                if (NewIsBetter(_coalition.Schedule))
                 {
                     count = 0;
                 }
@@ -94,16 +97,18 @@ namespace ConferenceTask
                 {
                     count++;
                 }
-                ClearAll();
+                
             }
 
             return BestSchedule;
         }
 
-        private void ClearAll()
+        private List<Agent> StartNewIteration(List<Agent> oldOpposition)
         {
             _coalition = new Coalition();
+            oldOpposition = new List<Agent>(_opposition);
             _opposition = new List<Agent>();
+            return oldOpposition;
         }
 
         private void FirstAgentInCoalition(Agent agent, Schedule schedule)
