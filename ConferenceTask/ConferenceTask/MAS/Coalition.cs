@@ -18,18 +18,17 @@ namespace ConferenceTask.MAS
         }
         
         /// <summary>
-        /// voting among the agents from population.
-        /// if not less than half of the approved agents, it returns true
+        /// Voting among the agents from population.
+        /// If not less than half of the approved agents, it returns true
         /// </summary>
-        /// <param name="newSchedule"></param>
+        /// <param name="newSchedule">new version of schedule</param>
         /// <returns></returns>
         public bool Voting(Schedule newSchedule)
         {
-            int count = 0;
+            var count = 0;
             foreach (var agent in Members)
             {
-                agent.AnaliseShedule(newSchedule);
-                if (agent.IsGoodShedule())
+                if (agent.IsGoodShedule(newSchedule))
                 {
                     count++;
                 }

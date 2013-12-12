@@ -27,6 +27,25 @@ namespace ConferenceTask
             BestSchedule = InitialFillShedule();
         }
 
+        #region initial methods
+
+        /// <summary>
+        /// Creates agents for every listener
+        /// </summary>
+        private void CreatesAgents()
+        {
+            for (int i = 0; i < Generator.Listeners; i++)
+            {
+                var ratings = new int[Schedule.ReportsCount];
+                for (int j = 0; j < Schedule.ReportsCount; j++)
+                {
+                    ratings[j] = _matrix[j, i];
+                }
+                var agent = new Agent(i, ratings);
+                _agents.Add(i, agent);
+            }
+        }
+
         private Schedule InitialFillShedule()
         {
             var shedule = new Schedule();
@@ -45,41 +64,24 @@ namespace ConferenceTask
             return shedule;
         }
 
-        /// <summary>
-        ///     Creates agents for every listener
-        /// </summary>
-        private void CreatesAgents()
-        {
-            for (int i = 0; i < Generator.Listeners; i++)
-            {
-                var ratings = new int[Schedule.ReportsCount];
-                for (int j = 0; j < Schedule.ReportsCount; j++)
-                {
-                    ratings[j] = _matrix[j, i];
-                }
-                var agent = new Agent(i, ratings);
-                _agents.Add(i, agent);
-            }
-        }
+        #endregion 
 
         /// <summary>
-        ///     Creates finally Schedule
+        /// Creates finally Schedule
         /// </summary>
         public Schedule CreateSchedule()
         {
             int count = 0;
-            var oldOpposition = new List<Agent>();
             while (count < 5)
             {
-                oldOpposition = StartNewIteration(oldOpposition);
-                var schedule = new Schedule();
-                schedule = InitialFillShedule();
+                var oldOpposition = StartNewIteration();
+                
                 var random = new Random();
                 int firstId = (oldOpposition.Count != 0) 
                         ? random.Next(oldOpposition.Count - 1)
                         : random.Next(_agents.Count - 1);
 
-                FirstAgentInCoalition(_agents[firstId], schedule);
+                FirstAgentInCoalition(_agents[firstId]);
 
                 foreach (var agent in _agents.Values)
                 {
@@ -87,8 +89,8 @@ namespace ConferenceTask
 
                     Negotiation(agent);
                 }
-
-                //all agents are in coalition or opposition
+                // all agents are in coalition or opposition
+                
                 if (NewIsBetter(_coalition.Schedule))
                 {
                     count = 0;
@@ -97,50 +99,37 @@ namespace ConferenceTask
                 {
                     count++;
                 }
-                
             }
 
             return BestSchedule;
         }
 
-        private List<Agent> StartNewIteration(List<Agent> oldOpposition)
+        private List<Agent> StartNewIteration()
         {
+            var oldOpposition = new List<Agent>(_opposition);
             _coalition = new Coalition();
-            oldOpposition = new List<Agent>(_opposition);
             _opposition = new List<Agent>();
             return oldOpposition;
         }
 
-        private void FirstAgentInCoalition(Agent agent, Schedule schedule)
+        /// <summary>
+        /// Added the first agent into coalition.
+        /// </summary>
+        /// <param name="agent">First agent</param>
+        private void FirstAgentInCoalition(Agent agent)
         {
-            agent.AnaliseShedule(schedule);
-
-            if (agent.IsGoodShedule())
-            {
-                _coalition.Schedule = schedule;
-            }
-            else
-            {
-                _coalition.Schedule = agent.GetMyBestShedule(schedule);
-            }
-
+            var schedule = InitialFillShedule();
+            _coalition.Schedule = agent.IsGoodShedule(schedule)
+                                ? schedule
+                                : agent.GetMyBestSchedule(schedule);
+            
             _coalition.Members.Add(agent);
         }
 
-
-        private bool NewIsBetter(Schedule schedule)
-        {
-            var newRating = _agents.Sum(agent => agent.Value.GetRating(schedule));
-
-            if (newRating > _bestRating)
-            {
-                _bestRating = newRating;
-                BestSchedule = schedule;
-                return true;
-            }
-            return false;
-        }
-
+        /// <summary>
+        /// Negotiation between new agent and coalition.
+        /// </summary>
+        /// <param name="agent">New agent</param>
         private void Negotiation(Agent agent)
         {
             var msg = new Message();
@@ -163,6 +152,25 @@ namespace ConferenceTask
             {
                 _opposition.Add(agent);
             }
+        }
+
+        /// <summary>
+        /// Compares new version of schedule with the best version.
+        /// If new schedule is bettes then restores.
+        /// </summary>
+        /// <param name="schedule">New version of schedule</param>
+        /// <returns></returns>
+        private bool NewIsBetter(Schedule schedule)
+        {
+            var newRating = _agents.Sum(agent => agent.Value.GetRating(schedule));
+
+            if (newRating > _bestRating)
+            {
+                _bestRating = newRating;
+                BestSchedule = schedule;
+                return true;
+            }
+            return false;
         }
     }
 }

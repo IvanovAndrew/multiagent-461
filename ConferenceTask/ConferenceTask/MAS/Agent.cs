@@ -18,21 +18,28 @@ namespace ConferenceTask.MAS
         /// Second dimension is report rating
         /// Sorted by descending
         /// </summary>
-        private readonly Report[][] _analisedShedule;
+        private readonly Report[][] _analisedSchedule;
 
-        private Message answer;
+        private Message _answer;
 
         public Agent(int id, int[] reportRatings)
         {
             Id = id;
             _reportRatings = reportRatings;
-            _analisedShedule = new Report[Schedule.ReportsCountInSection][];
+
+            _analisedSchedule = AnalysedScheduleInit();
+            _minBound = CalculateBound();
+        }
+
+        #region initial methods
+        private Report[][] AnalysedScheduleInit()
+        {
+            var res = new Report[Schedule.ReportsCountInSection][];
             for (int i = 0; i < Schedule.ReportsCountInSection; i++)
             {
-                _analisedShedule[i] = new Report[Schedule.Sections];
+                res[i] = new Report[Schedule.Sections];
             }
-            
-            _minBound = CalculateBound();
+            return res;
         }
 
         /// <summary>
@@ -45,12 +52,15 @@ namespace ConferenceTask.MAS
             return temp[Schedule.ReportsCountInSection];
         }
 
+        #endregion
+
         /// <summary>
         /// if agent likes current Schedule then returns true
         /// </summary>
         /// <returns></returns>
-        public bool IsGoodShedule()
+        public bool IsGoodShedule(Schedule schedule)
         {
+            AnaliseShedule(schedule);
             for (int i = 0; i < Schedule.ReportsCountInSection; i++)
             {
                 if (IsGoodTime(i)) continue;
@@ -60,17 +70,41 @@ namespace ConferenceTask.MAS
         }
 
         /// <summary>
+        /// Creates schedule which reports are sorted by descending on each rows
+        /// </summary>
+        /// <param name="schedule">current schedule</param>
+        private void AnaliseShedule(Schedule schedule)
+        {
+            // fill
+            foreach (Report report in schedule.Reports)
+            {
+                _analisedSchedule[report.PositionInSection][report.SectionNumber] = report;
+            }
+
+            // sorting
+            for (int i = 0; i < Schedule.ReportsCountInSection; i++)
+            {
+                _analisedSchedule[i] = _analisedSchedule[i].OrderByDescending(elem => _reportRatings[elem.Id]).ToArray();
+            }
+        }
+        
+        /// <summary>
         /// Checks if maximal rating in the time is greather than minimal bound
         /// </summary>
         /// <param name="time"></param>
         /// <returns></returns>
         private bool IsGoodTime(int time)
         {
-            var report = _analisedShedule[time][0];
+            var report = _analisedSchedule[time][0];
             return _reportRatings[report.Id] >= _minBound;
         }
 
-        public Schedule GetMyBestShedule(Schedule schedule)
+        /// <summary>
+        /// Returns best version of schedule in the opinion agent
+        /// </summary>
+        /// <param name="schedule">Current schedule</param>
+        /// <returns></returns>
+        public Schedule GetMyBestSchedule(Schedule schedule)
         {
             var newShedule = new Schedule();
             newShedule = schedule;
@@ -78,7 +112,7 @@ namespace ConferenceTask.MAS
             {
                 if (IsGoodTime(time)) continue;
 
-                ChangeShedule(time, newShedule);
+                newShedule = ChangeShedule(time, newShedule);
             }
             return newShedule;
         }
@@ -89,7 +123,7 @@ namespace ConferenceTask.MAS
             var index = -1;
             for (int i = 0; i < Schedule.ReportsCountInSection; i++)
             {
-                var report = _analisedShedule[i][1];
+                var report = _analisedSchedule[i][1];
                 if (_reportRatings[report.Id] > max)
                 {
                     max = _reportRatings[report.Id];
@@ -104,12 +138,12 @@ namespace ConferenceTask.MAS
         /// </summary>
         /// <param name="badTime"></param>
         /// <param name="schedule">planning Schedule</param>
-        private void ChangeShedule(int badTime, Schedule schedule)
+        private Schedule ChangeShedule(int badTime, Schedule schedule)
         {
             int index = GetSecondTopIndex();
 
-            var badReport = _analisedShedule[badTime][2];
-            var goodReport = _analisedShedule[index][1];
+            var badReport = _analisedSchedule[badTime][2];
+            var goodReport = _analisedSchedule[index][1];
 
             schedule.Reports.Remove(badReport);
             schedule.Reports.Remove(goodReport);
@@ -129,35 +163,25 @@ namespace ConferenceTask.MAS
             schedule.Reports.Add(badReport);
             schedule.Reports.Add(goodReport);
 
-            // repalce two reports in analised Schedule
-            _analisedShedule[badTime][2] = goodReport;
-            _analisedShedule[index][1] = badReport;
+            // replace two reports in analised Schedule
+            _analisedSchedule[badTime][2] = goodReport;
+            _analisedSchedule[index][1] = badReport;
+
+            return schedule;
         }
 
         /// <summary>
-        /// Creates Schedule which reports are sorted by descending on each line
+        /// Returns the sum of max values in each row
         /// </summary>
-        /// <param name="schedule">current Schedule</param>
-        public void AnaliseShedule(Schedule schedule)
-        {
-            foreach (Report report in schedule.Reports)
-            {
-                _analisedShedule[report.PositionInSection][report.SectionNumber] = report;
-            }
-
-            for (int i = 0; i < Schedule.ReportsCountInSection; i++)
-            {
-                _analisedShedule[i] = _analisedShedule[i].OrderByDescending(elem => _reportRatings[elem.Id]).ToArray();
-            }
-        }
-
+        /// <param name="schedule"></param>
+        /// <returns></returns>
         public int GetRating(Schedule schedule)
         {
             AnaliseShedule(schedule);
-            int res = 0;
+            var res = 0;
             for (int i = 0; i < Schedule.ReportsCountInSection; i++)
             {
-                res += _reportRatings[_analisedShedule[i][0].Id];
+                res += _reportRatings[_analisedSchedule[i][0].Id];
             }
             return res;
         }
@@ -165,41 +189,38 @@ namespace ConferenceTask.MAS
         #region ICommunication members
         public Message GetAnswer()
         {
-            return answer;
+            return _answer;
         }
 
         public void ReceiveMessage(Message msg)
         {
-            answer = new Message();
+            _answer = new Message();
             switch (msg.Type)
             {
                 // agent is new. 
                 // it exploring the current schedule
                 case MessageType.Type.CURRENTSHEDULE:
                     AnaliseShedule(msg.Schedule);
-                    if (IsGoodShedule())
+                    if (IsGoodShedule(msg.Schedule))
                     {
-                        answer.Type = MessageType.Type.ACCEPTAGENT;
+                        _answer.Type = MessageType.Type.ACCEPTAGENT;
                     }
                     else
-                    {           
-                        answer.Type = MessageType.Type.MODIFIEDSHEDULE;
-                        answer.Schedule = GetMyBestShedule(msg.Schedule);
+                    {
+                        _answer.Schedule = GetMyBestSchedule(msg.Schedule);
+                        _answer.Type = MessageType.Type.MODIFIEDSHEDULE;
                     }
                     break;
 
                 // maybe it unnecessary
                 case MessageType.Type.REJECTAGENT:
                 case MessageType.Type.ACCEPTAGENT:
-                    answer = msg;
+                    _answer = msg;
                     break;
 
                 default:
                     throw new Exception("Incorrect message for agent");
-                    break;
             }
-
-
         }
         #endregion
     }
