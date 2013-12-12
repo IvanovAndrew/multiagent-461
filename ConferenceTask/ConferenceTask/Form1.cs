@@ -12,6 +12,7 @@ namespace ConferenceTask
 
         private void FillTable(Schedule schedule)
         {
+            sheduleTable.Controls.Clear();
             foreach (var report in schedule.Reports)
             {
                 var control = new Label {Text = string.Format("{0}, id = {1}", report.Name, report.Id+1)};
