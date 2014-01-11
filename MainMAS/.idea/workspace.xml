@@ -10,14 +10,14 @@
     <file path="/Listener.java" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1387910682722" ignored="false" />
     <file path="/ThanksAgent.java" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1387905848689" ignored="false" />
     <file path="/a.groovy" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1387910907545" ignored="false" />
-    <file path="/a.java" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1388766031493" ignored="false" />
-    <file path="/sample.java" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1388766229467" ignored="false" />
+    <file path="/a.java" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1389441411234" ignored="false" />
+    <file path="/sample.java" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1389441464327" ignored="false" />
     <file path="/Shedule.java" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1388686552220" ignored="false" />
     <file path="/Report.java" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1388766790942" ignored="false" />
     <file path="/OrganisatorAgent.java" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1388863035556" ignored="false" />
     <file path="/Parser.java" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1388696257159" ignored="false" />
     <file path="/Schedule.java" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1388863571191" ignored="false" />
-    <file path="/ListenerAgent.java" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1389367019156" ignored="false" />
+    <file path="/ListenerAgent.java" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1389452007548" ignored="false" />
     <file path="/ScheduleOntology.java" changelist="ba835660-c531-4841-926a-3ee662156fcb" time="1389372321252" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -34,23 +34,6 @@
   </component>
   <component name="DebuggerManager">
     <ui_properties default_suspend_policy="SuspendAll" default_condition_enabled="true" />
-    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true">
-      <breakpoint url="file://$PROJECT_DIR$/src/MAS/ThanksAgent.java" line="79" class="MAS.ThanksAgent" package="MAS">
-        <option name="ENABLED" value="true" />
-        <option name="LOG_ENABLED" value="false" />
-        <option name="LOG_EXPRESSION_ENABLED" value="false" />
-        <option name="REMOVE_AFTER_HIT" value="true" />
-        <option name="SUSPEND_POLICY" value="SuspendAll" />
-        <option name="SUSPEND" value="true" />
-        <option name="COUNT_FILTER_ENABLED" value="false" />
-        <option name="COUNT_FILTER" value="0" />
-        <option name="CONDITION_ENABLED" value="true" />
-        <option name="CLASS_FILTERS_ENABLED" value="false" />
-        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
-        <option name="CONDITION" value="" />
-        <option name="LOG_MESSAGE" value="" />
-      </breakpoint>
-    </line_breakpoints>
     <breakpoint_any default_suspend_policy="SuspendAll" default_condition_enabled="true">
       <breakpoint>
         <option name="NOTIFY_CAUGHT" value="true" />
@@ -87,6 +70,23 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </breakpoint_any>
+    <line_breakpoints default_suspend_policy="SuspendAll" default_condition_enabled="true">
+      <breakpoint url="file://$PROJECT_DIR$/src/MAS/ThanksAgent.java" line="79" class="MAS.ThanksAgent" package="MAS">
+        <option name="ENABLED" value="true" />
+        <option name="LOG_ENABLED" value="false" />
+        <option name="LOG_EXPRESSION_ENABLED" value="false" />
+        <option name="REMOVE_AFTER_HIT" value="true" />
+        <option name="SUSPEND_POLICY" value="SuspendAll" />
+        <option name="SUSPEND" value="true" />
+        <option name="COUNT_FILTER_ENABLED" value="false" />
+        <option name="COUNT_FILTER" value="0" />
+        <option name="CONDITION_ENABLED" value="true" />
+        <option name="CLASS_FILTERS_ENABLED" value="false" />
+        <option name="INSTANCE_FILTERS_ENABLED" value="false" />
+        <option name="CONDITION" value="" />
+        <option name="LOG_MESSAGE" value="" />
+      </breakpoint>
+    </line_breakpoints>
     <breakpoint_rules />
     <ui_properties />
   </component>
@@ -96,94 +96,40 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="ScheduleOntology.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/ConferenceTask/Ontology/ScheduleOntology.java">
+      <file leaf-file-name="ListenerAgent.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/ConferenceTask/ListenerAgent.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="42" column="19" selection-start="1412" selection-end="1412" vertical-scroll-proportion="0.6276923">
+            <state line="367" column="14" selection-start="10550" selection-end="10550" vertical-scroll-proportion="0.33147633">
               <folding>
                 <element signature="imports" expanded="true" />
+                <element signature="e#1690#1702#0" expanded="true" />
+                <element signature="docComment;method#setup#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="method#createFirstSchedule#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="docComment;method#calculateMinThreshold#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="method#calculateMinThreshold#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="docComment;method#updateVotes#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="method#updateVotes#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="docComment;method#acceptNewSchedule#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="method#acceptNewSchedule#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="docComment;method#acceptAgent#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="docComment;method#rejectNewSchedule#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="docComment;method#sendCurrentSchedule#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="docComment;method#createReply#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="docComment;method#createVoting#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="docComment;method#vote#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="method#sortDyDescending#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="docComment;method#analiseSchedule#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="method#analiseSchedule#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="docComment;method#isGoodSchedule#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="method#isGoodSchedule#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="docComment;method#isGoodTime#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="method#isGoodTime#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="docComment;method#getAlternativeSchedule#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="method#getAlternativeSchedule#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="method#GetSecondTopIndex#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="docComment;method#changeSchedule#0;class#ListenerAgent#0" expanded="false" />
+                <element signature="method#changeSchedule#0;class#ListenerAgent#0" expanded="false" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ECommerceOntology.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/examples/content/eco/ECommerceOntology.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="55" column="36" selection-start="1864" selection-end="1864" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ECommerceOntology.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/examples/content/ecommerceOntology/ECommerceOntology.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="42" column="0" selection-start="1572" selection-end="1572" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="ECommerceVocabulary.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/examples/content/ecommerceOntology/ECommerceVocabulary.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="56" column="41" selection-start="2270" selection-end="2270" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="MusicShopOntology.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/examples/content/mso/MusicShopOntology.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="76" column="34" selection-start="2422" selection-end="2422" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="MusicShopOntology.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/examples/content/musicShopOntology/MusicShopOntology.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="78" column="40" selection-start="2860" selection-end="2860" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="PeopleOntology.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/examples/content/ontology/PeopleOntology.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="54" column="4" selection-start="1853" selection-end="1853" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="MotherOf.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/examples/content/ontology/MotherOf.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="43" column="34" selection-start="1386" selection-end="1386" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Report.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/ConferenceTask/Report.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="15" column="32" selection-start="312" selection-end="329" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Schedule.java" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/ConferenceTask/Schedule.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="32" column="43" selection-start="790" selection-end="790" vertical-scroll-proportion="0.0">
-              <folding />
             </state>
           </provider>
         </entry>
@@ -209,10 +155,10 @@
         <option value="$PROJECT_DIR$/src/MAS/ThanksAgent.java" />
         <option value="$PROJECT_DIR$/src/ConferenceTask/Report.java" />
         <option value="$PROJECT_DIR$/src/ConferenceTask/OrganisatorAgent.java" />
-        <option value="$PROJECT_DIR$/src/ConferenceTask/ListenerAgent.java" />
         <option value="$PROJECT_DIR$/src/ConferenceTask/Schedule.java" />
         <option value="$PROJECT_DIR$/lib/examples/content/ecommerceOntology/ECommerceOntology.java" />
         <option value="$PROJECT_DIR$/src/ConferenceTask/Ontology/ScheduleOntology.java" />
+        <option value="$PROJECT_DIR$/src/ConferenceTask/ListenerAgent.java" />
       </list>
     </option>
   </component>
@@ -220,6 +166,25 @@
     <option name="x" value="10" />
     <option name="width" value="1346" />
     <option name="height" value="728" />
+  </component>
+  <component name="ProjectInspectionProfilesVisibleTreeState">
+    <entry key="Project Default">
+      <profile-state>
+        <expanded-state>
+          <State>
+            <id />
+          </State>
+          <State>
+            <id>Spelling</id>
+          </State>
+        </expanded-state>
+        <selected-state>
+          <State>
+            <id>SpellCheckingInspection</id>
+          </State>
+        </selected-state>
+      </profile-state>
+    </entry>
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -247,7 +212,7 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -256,9 +221,51 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="MAS" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="MainMAS" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="MAS" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="MainMAS" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="MAS" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="MainMAS" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ConferenceTask" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -274,12 +281,12 @@
     <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
     <property name="restartRequiresConfirmation" value="true" />
-    <property name="FullScreen" value="false" />
     <property name="MemberChooser.showClasses" value="true" />
+    <property name="FullScreen" value="false" />
     <property name="GoToClass.includeLibraries" value="false" />
-    <property name="dynamic.classpath" value="false" />
-    <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
+    <property name="options.splitter.details.proportions" value="0.2" />
+    <property name="dynamic.classpath" value="false" />
   </component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
@@ -299,19 +306,6 @@
       <option name="SHMEM_ADDRESS" value="javadebug" />
       <option name="HOST" value="localhost" />
       <option name="PORT" value="5005" />
-      <method />
-    </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
       <method />
     </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
@@ -339,6 +333,19 @@
       <envs />
       <properties />
       <listeners />
+      <method />
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
       <method />
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
@@ -527,11 +534,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/lib/examples/messaging/CustomTemplateAgent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="33" column="35" selection-start="1347" selection-end="1347" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/examples/party/GuestAgent.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="119" column="42" selection-start="3712" selection-end="3712" vertical-scroll-proportion="0.0" />
@@ -559,72 +561,108 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/ConferenceTask/Report.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="32" selection-start="312" selection-end="329" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/ConferenceTask/Schedule.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="32" column="43" selection-start="790" selection-end="790" vertical-scroll-proportion="0.0">
+        <state line="15" column="32" selection-start="312" selection-end="329" vertical-scroll-proportion="0.4095064">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/examples/content/eco/ECommerceOntology.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="55" column="36" selection-start="1864" selection-end="1864" vertical-scroll-proportion="0.0">
+        <state line="55" column="36" selection-start="1864" selection-end="1864" vertical-scroll-proportion="0.48288974">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/examples/content/ecommerceOntology/ECommerceOntology.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="0" selection-start="1572" selection-end="1572" vertical-scroll-proportion="0.0">
+        <state line="42" column="0" selection-start="1572" selection-end="1572" vertical-scroll-proportion="0.032319393">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/examples/content/ecommerceOntology/ECommerceVocabulary.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="41" selection-start="2270" selection-end="2270" vertical-scroll-proportion="0.0">
+        <state line="56" column="41" selection-start="2270" selection-end="2270" vertical-scroll-proportion="0.8060837">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/examples/content/mso/MusicShopOntology.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="76" column="34" selection-start="2422" selection-end="2422" vertical-scroll-proportion="0.0">
+        <state line="76" column="34" selection-start="2422" selection-end="2422" vertical-scroll-proportion="0.81352836">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/examples/content/musicShopOntology/MusicShopOntology.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="78" column="40" selection-start="2860" selection-end="2860" vertical-scroll-proportion="0.0">
+        <state line="78" column="40" selection-start="2860" selection-end="2860" vertical-scroll-proportion="0.81352836">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/examples/content/ontology/PeopleOntology.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="54" column="4" selection-start="1853" selection-end="1853" vertical-scroll-proportion="0.0">
+        <state line="54" column="4" selection-start="1853" selection-end="1853" vertical-scroll-proportion="0.03107861">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/examples/content/ontology/MotherOf.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="43" column="34" selection-start="1386" selection-end="1386" vertical-scroll-proportion="0.0">
+        <state line="43" column="34" selection-start="1386" selection-end="1386" vertical-scroll-proportion="0.50274223">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/ConferenceTask/Ontology/ScheduleOntology.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="42" column="19" selection-start="1412" selection-end="1412" vertical-scroll-proportion="0.6276923">
+        <state line="43" column="30" selection-start="1442" selection-end="1442" vertical-scroll-proportion="0.20857699">
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ConferenceTask/Schedule.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="32" column="43" selection-start="790" selection-end="790" vertical-scroll-proportion="0.81352836">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/ConferenceTask/ListenerAgent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="367" column="14" selection-start="10550" selection-end="10550" vertical-scroll-proportion="0.33147633">
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#1690#1702#0" expanded="true" />
+            <element signature="docComment;method#setup#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="method#createFirstSchedule#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="docComment;method#calculateMinThreshold#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="method#calculateMinThreshold#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="docComment;method#updateVotes#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="method#updateVotes#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="docComment;method#acceptNewSchedule#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="method#acceptNewSchedule#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="docComment;method#acceptAgent#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="docComment;method#rejectNewSchedule#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="docComment;method#sendCurrentSchedule#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="docComment;method#createReply#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="docComment;method#createVoting#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="docComment;method#vote#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="method#sortDyDescending#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="docComment;method#analiseSchedule#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="method#analiseSchedule#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="docComment;method#isGoodSchedule#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="method#isGoodSchedule#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="docComment;method#isGoodTime#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="method#isGoodTime#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="docComment;method#getAlternativeSchedule#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="method#getAlternativeSchedule#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="method#GetSecondTopIndex#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="docComment;method#changeSchedule#0;class#ListenerAgent#0" expanded="false" />
+            <element signature="method#changeSchedule#0;class#ListenerAgent#0" expanded="false" />
           </folding>
         </state>
       </provider>

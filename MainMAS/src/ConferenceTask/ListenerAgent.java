@@ -23,41 +23,38 @@ import java.util.Queue;
  */
 public class ListenerAgent extends Agent
 {
-    public static final String YOU_ARE_BOSS = "You are boss";
-    public static final String BOSS_NAME = "Boss_name";
     public static final String I_AM_NEW = "I am new";
     public static final String SCHEDULE = "Schedule";
+    public static final String IT_IS_GOOD_SCHEDULE = "It is good schedule";
     public static final String ALTERNATIVE_SCHEDULE = "Alternative schedule";
     public static final String VOTING = "Voting";
-    public static final String ACCEPTAGENT = "Accept agentT";
-    public static final String REJECTAGENT = "Reject";
+    public static final String ACCEPT_AGENT = "Accept agent";
+    public static final String REJECT_AGENT = "Reject";
     public static final String VOTE_YES = "YES";
     public static final String VOTE_NO = "NO";
-    public static final String HELLO = "HELLO";
 
     private final int minBound = Schedule.reportsCount / 2;
     private int[] ratings = new int[Schedule.reportsCount];
     private int minRatingThreshold;
 
     private Schedule coalitionsSchedule;
-    private Report[][] analisedShedule = new Report[Schedule.reportsInSections][Schedule.sections];
-    private ArrayList<AID> coalition = new ArrayList<AID> ();
+    private Report[][] analysedSchedule = new Report[Schedule.reportsInSections][Schedule.sections];
+    private ArrayList<AID> coalition = new ArrayList<AID>();
     private double quorum = 0.67;
     private int voteYes = 0;
     private int votesNo = 0;
     private boolean nowVoting = false;
-    private Queue<ACLMessage> queue = new PriorityQueue<ACLMessage> ();
+    private ArrayList<ACLMessage> queue = new ArrayList<ACLMessage>();
     public static String prefixName = "agent_";
 
     /**
-     * Setup the agent.  Registers with the DF, and adds a behaviour to
-     * process incoming messages.
+     * Setup the agent.
      */
     protected void setup ()
     {
-        System.out.println ("Hello, I'm listener " + getLocalName ());
+        System.out.println("Hello, I'm listener " + getLocalName());
 
-        Object[] args = getArguments ();
+        Object[] args = getArguments();
         int bossId = 0;
         boolean amBoss = false;
         if (args != null && args.length > 0)
@@ -67,205 +64,91 @@ public class ListenerAgent extends Agent
             ratings = (int[]) args[2];
         }
 
-        minRatingThreshold = calculateMinThreshold ();
+        minRatingThreshold = calculateMinThreshold();
 
-        if (!amBoss)
+        if (! amBoss)
         {
             try
             {
-                jade.wrapper.AgentContainer ac = getContainerController ();
-                AgentController agent = ac.getAgent (prefixName + bossId);
-                ACLMessage msg = new ACLMessage (ACLMessage.INFORM);
-                msg.setContent (I_AM_NEW);
-                msg.addReceiver (new AID(agent.getName (), AID.ISGUID));
-                send (msg);
+                jade.wrapper.AgentContainer ac = getContainerController();
+                AgentController agent = ac.getAgent(prefixName + bossId);
+                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+                msg.setContent(I_AM_NEW);
+                msg.addReceiver(new AID(agent.getName(), AID.ISGUID));
+                send(msg);
             }
             catch (ControllerException e)
             {
-                e.printStackTrace ();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
         }
         else
         {
-            System.out.println (getLocalName () + " IS BOSS");
+            coalition.add(getAID());
+            coalitionsSchedule = createFirstSchedule();
+            System.out.println(getLocalName() + " IS BOSS");
         }
 
-
-        addBehaviour (new CyclicBehaviour (this)
+        addBehaviour(new CyclicBehaviour(this)
         {
             public void action ()
             {
-                ACLMessage msg = receive (MessageTemplate.MatchPerformative (ACLMessage.INFORM));
-                /*if (queue.size() == 0)
-                {
-                    msg = receive (MessageTemplate.MatchPerformative (ACLMessage.INFORM));
-                }
-                else
-                {
-                    msg = queue.element();
-                }*/
-
+                ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
                 try
                 {
                     if (msg != null)
                     {
-                        System.out.println (" – " + myAgent.getLocalName () + " received: " + msg.getContent ());
-//                        if (null != msg.getContentObject ())
-//                        {
-//                            System.out.println (":::" + getLocalName () + " received: " + msg.getContentObject ());
-//                        }
-                        String content = msg.getContent ();
-
-//                        if (HELLO.equals (content))
-//                        {
-//                            System.out.println ("I received hello message from" + msg.getSender ().getLocalName ());
-//                        }
-                        /*else if (YOU_ARE_BOSS.equalsIgnoreCase (content))
+                        if (nowVoting)
                         {
-                            coalition.add (getAID ());
-
-                            Schedule schedule;
-                            //schedule = (Schedule) msg.getContentObject ();
-                            analiseSchedule (schedule);
-
-                            coalitionsSchedule = isGoodSchedule () ? schedule : getAlternativeShedule (schedule);
-                        }*/
-//                        else if (BOSS_NAME.equals (content))
-//                        {
-//                            AID boss;
-//                            System.out.println ((Integer) msg.getContentObject ());
-//                            int id = (Integer) msg.getContentObject ();
-//
-//                            ACLMessage message = new ACLMessage (ACLMessage.INFORM);
-//                            message.setContent (I_AM_NEW);
-//                            message.addReceiver (new AID (prefixName+id, AID.ISLOCALNAME));
-//                            send (message);
-//                        }
-                        if (I_AM_NEW.equals (content))
-                        {
-                            // send coalition's schedule
-                            ACLMessage reply = msg.createReply ();
-                            if (coalitionsSchedule == null)
+                            if (msg.getContent().equals(VOTE_YES) || msg.getContent().equals(VOTE_NO))
                             {
-                                coalitionsSchedule = createFirstSchedule ();
+                                updateVotes(msg.getContent());
                             }
-                            reply.setContentObject (coalitionsSchedule.clone ());
-                            reply.setContent (SCHEDULE);
-
-                            send (reply);
-                            System.out.println (getLocalName () + " sends " + coalitionsSchedule);
-                        }
-                        else if (SCHEDULE.equals (content))
-                        {
-                            Schedule schedule = new Schedule ();
-                            schedule = (Schedule) msg.getContentObject ();
-                            analiseSchedule (schedule);
-
-                            if (isGoodSchedule ())
+                            else if (msg.getContent().equals(VOTING))
                             {
-                                ACLMessage reply = msg.createReply ();
-                                reply.setContent (ACCEPTAGENT);
-                                send (reply);
+                                queue.add(msg);
+                                vote();
                             }
                             else
                             {
-                                Schedule alterSchedule;
-                                alterSchedule = getAlternativeShedule (schedule);
-
-                                ACLMessage reply = msg.createReply ();
-                                reply.setContent (ALTERNATIVE_SCHEDULE);
-                                reply.setContentObject (alterSchedule);
+                                queue.add(msg);
                             }
-                        }
-                        else if (ALTERNATIVE_SCHEDULE.equals (content))
-                        {
-                            if (queue.size () == 0)
-                            {
-                                ACLMessage voteMsg = new ACLMessage (ACLMessage.INFORM);
-                                voteMsg.setContentObject (msg.getContentObject ());
-                                voteMsg.setContent (VOTING);
-                                for (AID aid : coalition)
-                                {
-                                    voteMsg.addReceiver (aid);
-                                }
-                                send (voteMsg);
-                                queue.add (msg);
-                                nowVoting = true;
-                            }
-                            else
-                            {
-                                queue.add (msg);
-                            }
-                        }
-                        else if (VOTING.equals (content))
-                        {
-                            Schedule alterSchedule;
-                            alterSchedule = (Schedule) msg.getContentObject ();
-                            analiseSchedule (alterSchedule);
-
-                            ACLMessage reply = msg.createReply ();
-                            if (isGoodSchedule ())
-                            {
-                                reply.setContent (VOTE_YES);
-                            }
-                            else
-                            {
-                                reply.setContent (VOTE_NO);
-                            }
-                            send (reply);
-                        }
-                        else if (VOTE_YES.equals (content))
-                        {
-                            voteYes++;
-                        }
-                        else if (VOTE_NO.equals (content))
-                        {
-                            votesNo++;
-                        }
-                        else if (ACCEPTAGENT.equals (content))
-                        {
-                            coalition.add (msg.getSender ());
-                        }
-                        else if (REJECTAGENT.equals (content))
-                        {
-                            // say sorry
                         }
                         else
                         {
-                            System.out.println ("Unrecognized message");
+                            queue.add(msg);
+                            handleMessage();
                         }
-                    }
-                    if (nowVoting && voteYes + votesNo == coalition.size ())
-                    {
-                        ACLMessage oldMsg;
-                        oldMsg = queue.element();
-                        ACLMessage reply = oldMsg.createReply();
-                        if (voteYes >= coalition.size() * quorum)
-                        {
-                            reply.setContent (ACCEPTAGENT);
-                        }
-                        else
-                        {
-                            reply.setContent (REJECTAGENT);
-                        }
-                        send (reply);
-                        voteYes = 0;
-                        votesNo = 0;
-                        nowVoting = false;
                     }
                 }
                 catch (IOException e1)
                 {
-                    e1.printStackTrace ();
+                    e1.printStackTrace();
                 }
                 catch (UnreadableException e1)
                 {
-                    e1.printStackTrace ();
+                    e1.printStackTrace();
                 }
-
-                block ();
+                block();
             }
         });
+    }
+
+    private Schedule createFirstSchedule ()
+    {
+        Schedule schedule = new Schedule();
+        for (int reportId = 0; reportId < schedule.reportsCount; reportId++)
+        {
+            Report report = new Report();
+            report.id = reportId;
+            report.section = reportId % schedule.sections;
+            report.positionInSection = reportId / schedule.sections;
+            schedule.reports.add(report);
+        }
+
+        analiseSchedule(schedule);
+
+        return isGoodSchedule() ? schedule : getAlternativeSchedule(schedule);
     }
 
     /**
@@ -275,7 +158,7 @@ public class ListenerAgent extends Agent
     private int calculateMinThreshold ()
     {
         int[] sortedArray;
-        sortedArray = ratings.clone ();
+        sortedArray = ratings.clone();
         for (int i = 0; i < sortedArray.length; i++)
         {
             for (int j = i + 1; j < sortedArray.length; j++)
@@ -293,7 +176,195 @@ public class ListenerAgent extends Agent
     }
 
     /**
-     * sorts array by descinding order according ratings
+     * counts votes.
+     * completes the poll, if all agents have voted.
+     *
+     * @param vote
+     * @throws UnreadableException
+     */
+    private void updateVotes (String vote) throws UnreadableException
+    {
+        if (vote.equals(VOTE_YES))
+        {
+            voteYes++;
+        }
+        else
+        {
+            votesNo++;
+        }
+
+        if (voteYes + votesNo == coalition.size())
+        {
+            if (voteYes >= quorum * coalition.size())
+            {
+                acceptNewSchedule();
+                acceptAgent();
+            }
+            else
+            {
+                rejectNewSchedule();
+            }
+            nowVoting = false;
+        }
+    }
+
+    /**
+     * Adds new agent in coalition and updates the schedule
+     *
+     * @throws UnreadableException
+     */
+    private void acceptNewSchedule () throws UnreadableException
+    {
+        ACLMessage oldMessage = queue.get(0);
+        coalitionsSchedule = (Schedule) oldMessage.getContentObject();
+        coalition.add(oldMessage.getSender());
+    }
+
+    /**
+     * Sends to agent message about it is accepted
+     */
+    private void acceptAgent ()
+    {
+        ACLMessage oldMessage = queue.get(0);
+        queue.remove(0);
+        ACLMessage reply = oldMessage.createReply();
+        reply.setContent(ACCEPT_AGENT);
+        send(reply);
+    }
+
+    /**
+     * Sends to agent message about it is rejected
+     */
+    private void rejectNewSchedule ()
+    {
+        ACLMessage oldMessage = queue.get(0);
+        queue.remove(0);
+
+        ACLMessage reply = oldMessage.createReply();
+        reply.setContent(REJECT_AGENT);
+        send(reply);
+    }
+
+    private void handleMessage () throws IOException, UnreadableException
+    {
+        while (!nowVoting && queue.size() > 0)
+        {
+            ACLMessage msg = queue.get(0);
+
+            if (msg.getContent().equals(I_AM_NEW))
+            {
+                sendCurrentSchedule();
+            }
+            else if (msg.getContent().equals(SCHEDULE))
+            {
+                createReply();
+            }
+            else if (msg.getContent().equals(IT_IS_GOOD_SCHEDULE))
+            {
+                acceptAgent();
+            }
+            else if (msg.getContent().equals(ALTERNATIVE_SCHEDULE))
+            {
+                createVoting();
+            }
+            else if (msg.getContent().equals(ACCEPT_AGENT) || msg.getContent().equals(REJECT_AGENT))
+            {
+                queue.remove(0);
+            }
+        }
+    }
+
+    /**
+     * sends to new agent current schedule
+     *
+     * @throws IOException
+     */
+    private void sendCurrentSchedule () throws IOException
+    {
+        ACLMessage msg = queue.get(0);
+        queue.remove(0);
+        ACLMessage reply = msg.createReply();
+
+        reply.setContentObject(coalitionsSchedule.clone());
+        reply.setContent(SCHEDULE);
+
+        send(reply);
+    }
+
+    /**
+     * agent analyzes the schedule and tells it like it or not
+     * @throws UnreadableException
+     * @throws IOException
+     */
+    private void createReply () throws UnreadableException, IOException
+    {
+        ACLMessage msg = queue.get(0);
+        queue.remove(0);
+        Schedule schedule;
+        schedule = (Schedule) msg.getContentObject();
+
+        analiseSchedule(schedule);
+
+        ACLMessage reply = msg.createReply();
+        if (isGoodSchedule())
+        {
+            reply.setContent(IT_IS_GOOD_SCHEDULE);
+        }
+        else
+        {
+            schedule = getAlternativeSchedule(schedule);
+            reply.setContentObject(schedule);
+            reply.setContent(ALTERNATIVE_SCHEDULE);
+        }
+        send(reply);
+    }
+
+    /**
+     * creates voting between agents from coalition
+     * @throws UnreadableException
+     * @throws IOException
+     */
+    private void createVoting () throws UnreadableException, IOException
+    {
+        ACLMessage msg = queue.get(0);
+        ACLMessage voteMsg = new ACLMessage(ACLMessage.INFORM);
+        Schedule alterSchedule = (Schedule) msg.getContentObject();
+        voteMsg.setContentObject(alterSchedule);
+        voteMsg.setContent(VOTING);
+
+        analiseSchedule(alterSchedule);
+
+        for (AID aid : coalition)
+        {
+            voteMsg.addReceiver(aid);
+        }
+        send(voteMsg);
+        nowVoting = true;
+    }
+
+    /**
+     * Agent from coalition votes yes or no
+     */
+    private void vote() throws UnreadableException
+    {
+        ACLMessage msg = queue.get(0);
+        queue.remove(0);
+        Schedule schedule;
+        schedule = (Schedule) msg.getContentObject();
+
+        analiseSchedule(schedule);
+
+        ACLMessage reply = msg.createReply();
+        if (isGoodSchedule())
+            reply.setContent(VOTE_YES);
+        else
+            reply.setContent(VOTE_NO);
+
+        send(reply);
+    }
+
+    /**
+     * sorts array by descending order according ratings
      * @param reports
      * @return
      */
@@ -305,7 +376,7 @@ public class ListenerAgent extends Agent
             {
                 if (ratings[reports[i].id] < ratings[reports[j].id])
                 {
-                    Report temp = reports[i].clone ();
+                    Report temp = reports[i].clone();
                     reports[i] = reports[j];
                     reports[j] = temp;
                 }
@@ -322,23 +393,23 @@ public class ListenerAgent extends Agent
     {
         for (Report report : schedule.reports)
         {
-            analisedShedule[report.positionInSection][report.section] = report.clone ();
+            analysedSchedule[report.positionInSection][report.section] = report.clone();
         }
 
         for (int i = 0; i < Schedule.reportsInSections; i++)
         {
-            analisedShedule[i] = sortDyDescending (analisedShedule[i]);
+            analysedSchedule[i] = sortDyDescending(analysedSchedule[i]);
         }
     }
 
     /**
-     *  if agent likes current schedule then returns true
+     * if agent likes current schedule then returns true
      */
     public boolean isGoodSchedule ()
     {
         for (int i = 0; i < Schedule.reportsInSections; i++)
         {
-            if (isGoodTime (i)) continue;
+            if (isGoodTime(i)) continue;
             return false;
         }
         return true;
@@ -351,26 +422,26 @@ public class ListenerAgent extends Agent
      */
     private boolean isGoodTime (int time)
     {
-        Report report = analisedShedule[time][0];
+        Report report = analysedSchedule[time][0];
         return ratings[report.id] >= minRatingThreshold;
     }
 
     /**
-     *  Creates alternative schedule
+     * Creates alternative schedule
      * @param schedule
      * @return
      */
-    public Schedule getAlternativeShedule (Schedule schedule)
+    public Schedule getAlternativeSchedule (Schedule schedule)
     {
-        Schedule newShedule;
-        newShedule = schedule;
+        Schedule newSchedule;
+        newSchedule = schedule;
         for (int time = 0; time < Schedule.reportsInSections; time++)
         {
-            if (isGoodTime (time)) continue;
+            if (isGoodTime(time)) continue;
 
-            changeSchedule (time, newShedule);
+            changeSchedule(time, newSchedule);
         }
-        return newShedule;
+        return newSchedule;
     }
 
     private int GetSecondTopIndex ()
@@ -379,7 +450,7 @@ public class ListenerAgent extends Agent
         int index = - 1;
         for (int i = 0; i < Schedule.reportsInSections; i++)
         {
-            Report report = analisedShedule[i][1];
+            Report report = analysedSchedule[i][1];
             if (ratings[report.id] > max)
             {
                 max = ratings[report.id];
@@ -396,13 +467,13 @@ public class ListenerAgent extends Agent
      */
     private void changeSchedule (int badTime, Schedule schedule)
     {
-        int index = GetSecondTopIndex ();
+        int index = GetSecondTopIndex();
 
-        Report badReport = analisedShedule[badTime][2];
-        Report goodReport = analisedShedule[index][1];
+        Report badReport = analysedSchedule[badTime][2];
+        Report goodReport = analysedSchedule[index][1];
 
-        schedule.reports.remove (badReport);
-        schedule.reports.remove (goodReport);
+        schedule.reports.remove(badReport);
+        schedule.reports.remove(goodReport);
 
         // do magic
         int tempBadNumbInSect = badReport.positionInSection;
@@ -415,28 +486,11 @@ public class ListenerAgent extends Agent
         goodReport.section = tempBadSecNumb;
         // end do magic
 
-        schedule.reports.add (badReport);
-        schedule.reports.add (goodReport);
+        schedule.reports.add(badReport);
+        schedule.reports.add(goodReport);
 
-        // replace two reports in analised schedule
-        analisedShedule[badTime][2] = goodReport;
-        analisedShedule[index][1] = badReport;
-    }
-
-    private Schedule createFirstSchedule()
-    {
-        Schedule schedule = new Schedule ();
-        for (int reportId = 0; reportId < schedule.reportsCount; reportId++)
-        {
-            Report report = new Report ();
-            report.id = reportId;
-            report.section = reportId % schedule.sections;
-            report.positionInSection = reportId / schedule.sections;
-            schedule.reports.add (report);
-        }
-
-        analiseSchedule (schedule);
-
-        return isGoodSchedule ()? schedule : getAlternativeShedule (schedule);
+        // replace two reports in analysed schedule
+        analysedSchedule[badTime][2] = goodReport;
+        analysedSchedule[index][1] = badReport;
     }
 }
