@@ -25,6 +25,11 @@ public class Schedule implements ContentElement
         reports = new ArrayList();
     }
 
+    public Schedule(SchedulePredicate obj)
+    {
+        reports = obj.reports;
+    }
+
     @Override
     public Schedule clone()
     {

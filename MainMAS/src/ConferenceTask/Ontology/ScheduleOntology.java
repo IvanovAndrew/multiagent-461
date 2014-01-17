@@ -31,6 +31,7 @@ public class ScheduleOntology extends Ontology
 
     //schedulePredicate class
     public static final String SCHEDULE_PREDICATE = "Schedule predicate";
+    public static final String MESSAGE = "message";
     public static final String REPORTS = "reports";
 
     // The singleton instance of this ontology
@@ -48,7 +49,7 @@ public class ScheduleOntology extends Ontology
         try
         {
             PrimitiveSchema integerSchema = (PrimitiveSchema) getSchema(BasicOntology.INTEGER);
-
+            PrimitiveSchema stringSchema = (PrimitiveSchema) getSchema(BasicOntology.STRING);
             AggregateSchema arrayReportsSchema = new AggregateSchema(BasicOntology.SEQUENCE);
 
             // Structure of the schema for the schedule concept
@@ -68,7 +69,8 @@ public class ScheduleOntology extends Ontology
             add(reportSchema, Report.class);
 
             PredicateSchema schedulePredicate = new PredicateSchema(SCHEDULE_PREDICATE);
-            schedulePredicate.add(REPORTS, arrayReportsSchema);
+            schedulePredicate.add(MESSAGE, stringSchema, ObjectSchema.MANDATORY);
+            schedulePredicate.add(REPORTS, arrayReportsSchema, ObjectSchema.OPTIONAL);
 
             add(schedulePredicate, SchedulePredicate.class);
         }

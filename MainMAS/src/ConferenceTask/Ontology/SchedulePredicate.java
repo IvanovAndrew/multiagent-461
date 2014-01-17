@@ -12,7 +12,18 @@ import jade.util.leap.ArrayList;
  */
 public class SchedulePredicate implements Predicate
 {
+    public String message;
     public ArrayList reports;
+
+    public String getMessage()
+    {
+        return message;
+    }
+
+    public void setMessage(String newMessage)
+    {
+        message = newMessage;
+    }
 
     public void setReports(ArrayList newReports)
     {

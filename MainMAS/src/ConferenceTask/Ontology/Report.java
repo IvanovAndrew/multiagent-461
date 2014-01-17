@@ -32,13 +32,28 @@ public class Report implements Concept
         return id;
     }
 
+    public void setId(int newId)
+    {
+        id = newId;
+    }
+
     public int getSection()
     {
         return section;
     }
 
+    public void setSection(int newSection)
+    {
+        section = newSection;
+    }
+
     public int getPositionInSection()
     {
         return positionInSection;
+    }
+
+    public void setPositionInSection(int newPositionInSection)
+    {
+        positionInSection = newPositionInSection;
     }
 }

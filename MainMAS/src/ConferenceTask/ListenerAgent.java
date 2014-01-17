@@ -1,9 +1,6 @@
 package ConferenceTask;
 
-import ConferenceTask.Ontology.Report;
-import ConferenceTask.Ontology.Schedule;
-import ConferenceTask.Ontology.ScheduleOntology;
-import ConferenceTask.Ontology.SchedulePredicate;
+import ConferenceTask.Ontology.*;
 import jade.content.ContentManager;
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
@@ -16,7 +13,6 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
-import jade.util.leap.List;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
 
@@ -30,18 +26,8 @@ import java.util.ArrayList;
  * Time: 21:12
  * To change this template use File | Settings | File Templates.
  */
-public class ListenerAgent extends Agent
+public class ListenerAgent extends Agent implements Message
 {
-    public static final String I_AM_NEW = "I am new";
-    public static final String SCHEDULE = "Schedule";
-    public static final String IT_IS_GOOD_SCHEDULE = "It is good schedule";
-    public static final String ALTERNATIVE_SCHEDULE = "Alternative schedule";
-    public static final String VOTING = "Voting";
-    public static final String ACCEPT_AGENT = "Accept agent";
-    public static final String REJECT_AGENT = "Reject";
-    public static final String VOTE_YES = "YES";
-    public static final String VOTE_NO = "NO";
-
     // We handle contents
     private ContentManager manager = (ContentManager) getContentManager();
     // This agent speaks the SL language
@@ -84,7 +70,7 @@ public class ListenerAgent extends Agent
 
         minRatingThreshold = calculateMinThreshold();
 
-        if (! amBoss)
+        if (!amBoss)
         {
             try
             {
@@ -107,8 +93,6 @@ public class ListenerAgent extends Agent
             System.out.println(getLocalName() + " IS BOSS");
         }
 
-        System.out.println("before behaviour");
-
         addBehaviour(new CyclicBehaviour(this)
         {
             public void action ()
@@ -118,7 +102,8 @@ public class ListenerAgent extends Agent
                 {
                     if (msg != null)
                     {
-                        System.out.println(getLocalName() + "received message "+ msg.getContent() +" from " + msg.getSender());
+                        System.out.println(msg.getClass());
+                        System.out.println(getLocalName() + " received message " + msg.getContent() + " from " + msg.getSender());
                         if (nowVoting)
                         {
                             if (msg.getContent().equals(VOTE_YES) || msg.getContent().equals(VOTE_NO))
@@ -142,21 +127,9 @@ public class ListenerAgent extends Agent
                         }
                     }
                 }
-                catch (IOException e1)
+                catch (Exception e1)
                 {
                     e1.printStackTrace();
-                }
-                catch (UnreadableException e1)
-                {
-                    e1.printStackTrace();
-                }
-                catch (Codec.CodecException e)
-                {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                }
-                catch (OntologyException e)
-                {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
                 block();
             }
@@ -165,6 +138,7 @@ public class ListenerAgent extends Agent
 
     private Schedule createFirstSchedule ()
     {
+        System.out.println("createFirstSchedule starts");
         Schedule schedule = new Schedule();
         for (int reportId = 0; reportId < schedule.reportsCount; reportId++)
         {
@@ -176,11 +150,13 @@ public class ListenerAgent extends Agent
         }
         analiseSchedule(schedule);
 
+        System.out.println("createFirstSchedule ends");
         return isGoodSchedule() ? schedule : getAlternativeSchedule(schedule);
     }
 
     /**
      * Calculates the minimal threshold
+     *
      * @return
      */
     private int calculateMinThreshold ()
@@ -230,7 +206,7 @@ public class ListenerAgent extends Agent
             }
             else
             {
-                rejectNewSchedule();
+                rejectAgent();
             }
             nowVoting = false;
         }
@@ -258,12 +234,13 @@ public class ListenerAgent extends Agent
         ACLMessage reply = oldMessage.createReply();
         reply.setContent(ACCEPT_AGENT);
         send(reply);
+        System.out.println(getLocalName() + " accepted new agent in coalition");
     }
 
     /**
      * Sends to agent message about it is rejected
      */
-    private void rejectNewSchedule ()
+    private void rejectAgent ()
     {
         ACLMessage oldMessage = queue.get(0);
         queue.remove(0);
@@ -271,40 +248,53 @@ public class ListenerAgent extends Agent
         ACLMessage reply = oldMessage.createReply();
         reply.setContent(REJECT_AGENT);
         send(reply);
+        System.out.println(getLocalName() + " rejected agent");
     }
 
     private void handleMessage () throws IOException, UnreadableException, Codec.CodecException, OntologyException
     {
-        while (!nowVoting && queue.size() > 0)
+        System.out.println(getLocalName() + " handle Message");
+        while (! nowVoting && queue.size() > 0)
         {
+            System.out.println(getLocalName() + " while-true");
             ACLMessage msg = queue.get(0);
 
             if (msg.getContent().equals(I_AM_NEW))
             {
+                System.out.println(getLocalName() + " received message "+ msg.getContent());
                 sendCurrentSchedule();
             }
             else if (msg.getContent().equals(SCHEDULE))
             {
+                System.out.println(getLocalName() + " received message "+ msg.getContent());
                 createReply();
             }
             else if (msg.getContent().equals(IT_IS_GOOD_SCHEDULE))
             {
+                System.out.println(getLocalName() + " received message "+ msg.getContent());
                 acceptAgent();
             }
             else if (msg.getContent().equals(ALTERNATIVE_SCHEDULE))
             {
+                System.out.println(getLocalName() + " received message "+ msg.getContent());
                 createVoting();
             }
             else if (msg.getContent().equals(ACCEPT_AGENT) || msg.getContent().equals(REJECT_AGENT))
             {
+                System.out.println(getLocalName() + " received message "+ msg.getContent());
                 queue.remove(0);
             }
+            else
+            {
+                System.out.println("Unrecognized type " + msg.getContent());
+                createReply();
+            }
         }
+        System.out.println(getLocalName() + " While-false");
     }
 
     /**
      * sends to new agent current schedule
-     *
      * @throws IOException
      */
     private void sendCurrentSchedule () throws IOException, Codec.CodecException, OntologyException
@@ -313,19 +303,30 @@ public class ListenerAgent extends Agent
         queue.remove(0);
         ACLMessage reply = msg.createReply();
 
-//        reply.setContentObject(coalitionsSchedule.clone());
-        reply.setContent(SCHEDULE);
         reply.setLanguage(codec.getName());
         reply.setOntology(ontology.getName());
-//        Schedule schedule = new Schedule();
-        jade.util.leap.ArrayList reports = coalitionsSchedule.reports;
-//        schedule.setReports(reports);
 
-        SchedulePredicate schedulePredicate;
-        schedulePredicate = new SchedulePredicate();
-        schedulePredicate.setReports(reports);
-        manager.fillContent(reply, schedulePredicate);
+        SchedulePredicate scheduletmplt;
+        scheduletmplt = createMessage(SCHEDULE, coalitionsSchedule.reports);
+
+        manager.fillContent(reply, scheduletmplt);
         send(reply);
+    }
+
+    private SchedulePredicate createMessage(String type)
+    {
+        return createMessage(type, null);
+    }
+
+    private SchedulePredicate createMessage(String type, jade.util.leap.ArrayList reports)
+    {
+        SchedulePredicate schedulePredicate = new SchedulePredicate();
+        schedulePredicate.setMessage(type);
+        if (reports != null)
+        {
+            schedulePredicate.setReports(reports);
+        }
+        return schedulePredicate;
     }
 
     /**
@@ -335,27 +336,33 @@ public class ListenerAgent extends Agent
      */
     private void createReply () throws UnreadableException, IOException
     {
-        System.out.println("Create reply" );
+        System.out.println("Create reply");
         ACLMessage msg = queue.get(0);
         queue.remove(0);
         Schedule schedule = null;
 
         try
         {
-            schedule = (Schedule) manager.extractContent(msg);
-            System.out.println(getLocalName() + "received schedule!");
+            SchedulePredicate schedulePredicate = (SchedulePredicate) manager.extractContent(msg);
+            System.out.println(getLocalName() + " received schedule!");
             analiseSchedule(schedule);
+
             ACLMessage reply = msg.createReply();
+            System.out.println(getLocalName() + " analyzed schedule");
+
             if (isGoodSchedule())
             {
                 reply.setContent(IT_IS_GOOD_SCHEDULE);
+                System.out.println(getLocalName() + " says " + IT_IS_GOOD_SCHEDULE);
             }
             else
             {
                 schedule = getAlternativeSchedule(schedule);
                 reply.setContentObject(schedule);
                 reply.setContent(ALTERNATIVE_SCHEDULE);
+                System.out.println(getLocalName() + " says " + ALTERNATIVE_SCHEDULE);
             }
+            manager.fillContent(reply, scheduleTmplt);
             send(reply);
         }
         catch (UngroundedException e)
@@ -370,17 +377,20 @@ public class ListenerAgent extends Agent
         {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             System.out.println("ERROR!!!! ='(");
             System.out.println(e);
             System.out.println("ERROR!!!! ='(");
         }
     }
-        /**
+
+    /**
      * creates voting between agents from coalition
+     *
      * @throws UnreadableException
      * @throws IOException
+     * @todo
      */
     private void createVoting () throws UnreadableException, IOException
     {
@@ -402,8 +412,9 @@ public class ListenerAgent extends Agent
 
     /**
      * Agent from coalition votes yes or no
+     * @TODO  smth
      */
-    private void vote() throws UnreadableException
+    private void vote () throws UnreadableException
     {
         ACLMessage msg = queue.get(0);
         queue.remove(0);
@@ -414,15 +425,20 @@ public class ListenerAgent extends Agent
 
         ACLMessage reply = msg.createReply();
         if (isGoodSchedule())
+        {
             reply.setContent(VOTE_YES);
+        }
         else
+        {
             reply.setContent(VOTE_NO);
+        }
 
         send(reply);
     }
 
     /**
      * sorts array by descending order according ratings
+     *
      * @param reports
      * @return
      */
@@ -477,6 +493,7 @@ public class ListenerAgent extends Agent
 
     /**
      * Checks if maximal rating in the time is greather than minimal bound
+     *
      * @param time
      * @return
      */
@@ -488,6 +505,7 @@ public class ListenerAgent extends Agent
 
     /**
      * Creates alternative schedule
+     *
      * @param schedule
      * @return
      */
@@ -522,6 +540,7 @@ public class ListenerAgent extends Agent
 
     /**
      * Changed one report from "bad" time to "good" report
+     *
      * @param badTime
      * @param schedule
      */
