@@ -1,18 +1,27 @@
 package ConferenceTask;
 
+import ConferenceTask.Ontology.Report;
+import ConferenceTask.Ontology.Schedule;
+import ConferenceTask.Ontology.ScheduleOntology;
+import ConferenceTask.Ontology.SchedulePredicate;
+import jade.content.ContentManager;
+import jade.content.lang.Codec;
+import jade.content.lang.sl.SLCodec;
+import jade.content.onto.Ontology;
+import jade.content.onto.OntologyException;
+import jade.content.onto.UngroundedException;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
+import jade.util.leap.List;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.PriorityQueue;
-import java.util.Queue;
 
 /**
  * Created with IntelliJ IDEA.
@@ -32,6 +41,13 @@ public class ListenerAgent extends Agent
     public static final String REJECT_AGENT = "Reject";
     public static final String VOTE_YES = "YES";
     public static final String VOTE_NO = "NO";
+
+    // We handle contents
+    private ContentManager manager = (ContentManager) getContentManager();
+    // This agent speaks the SL language
+    private Codec codec = new SLCodec();
+
+    private Ontology ontology = ScheduleOntology.getInstance();
 
     private final int minBound = Schedule.reportsCount / 2;
     private int[] ratings = new int[Schedule.reportsCount];
@@ -53,6 +69,8 @@ public class ListenerAgent extends Agent
     protected void setup ()
     {
         System.out.println("Hello, I'm listener " + getLocalName());
+        manager.registerLanguage(codec);
+        manager.registerOntology(ontology);
 
         Object[] args = getArguments();
         int bossId = 0;
@@ -89,6 +107,8 @@ public class ListenerAgent extends Agent
             System.out.println(getLocalName() + " IS BOSS");
         }
 
+        System.out.println("before behaviour");
+
         addBehaviour(new CyclicBehaviour(this)
         {
             public void action ()
@@ -98,6 +118,7 @@ public class ListenerAgent extends Agent
                 {
                     if (msg != null)
                     {
+                        System.out.println(getLocalName() + "received message "+ msg.getContent() +" from " + msg.getSender());
                         if (nowVoting)
                         {
                             if (msg.getContent().equals(VOTE_YES) || msg.getContent().equals(VOTE_NO))
@@ -129,6 +150,14 @@ public class ListenerAgent extends Agent
                 {
                     e1.printStackTrace();
                 }
+                catch (Codec.CodecException e)
+                {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                catch (OntologyException e)
+                {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
                 block();
             }
         });
@@ -145,7 +174,6 @@ public class ListenerAgent extends Agent
             report.positionInSection = reportId / schedule.sections;
             schedule.reports.add(report);
         }
-
         analiseSchedule(schedule);
 
         return isGoodSchedule() ? schedule : getAlternativeSchedule(schedule);
@@ -245,7 +273,7 @@ public class ListenerAgent extends Agent
         send(reply);
     }
 
-    private void handleMessage () throws IOException, UnreadableException
+    private void handleMessage () throws IOException, UnreadableException, Codec.CodecException, OntologyException
     {
         while (!nowVoting && queue.size() > 0)
         {
@@ -279,15 +307,24 @@ public class ListenerAgent extends Agent
      *
      * @throws IOException
      */
-    private void sendCurrentSchedule () throws IOException
+    private void sendCurrentSchedule () throws IOException, Codec.CodecException, OntologyException
     {
         ACLMessage msg = queue.get(0);
         queue.remove(0);
         ACLMessage reply = msg.createReply();
 
-        reply.setContentObject(coalitionsSchedule.clone());
+//        reply.setContentObject(coalitionsSchedule.clone());
         reply.setContent(SCHEDULE);
+        reply.setLanguage(codec.getName());
+        reply.setOntology(ontology.getName());
+//        Schedule schedule = new Schedule();
+        jade.util.leap.ArrayList reports = coalitionsSchedule.reports;
+//        schedule.setReports(reports);
 
+        SchedulePredicate schedulePredicate;
+        schedulePredicate = new SchedulePredicate();
+        schedulePredicate.setReports(reports);
+        manager.fillContent(reply, schedulePredicate);
         send(reply);
     }
 
@@ -298,28 +335,49 @@ public class ListenerAgent extends Agent
      */
     private void createReply () throws UnreadableException, IOException
     {
+        System.out.println("Create reply" );
         ACLMessage msg = queue.get(0);
         queue.remove(0);
-        Schedule schedule;
-        schedule = (Schedule) msg.getContentObject();
+        Schedule schedule = null;
 
-        analiseSchedule(schedule);
-
-        ACLMessage reply = msg.createReply();
-        if (isGoodSchedule())
+        try
         {
-            reply.setContent(IT_IS_GOOD_SCHEDULE);
+            schedule = (Schedule) manager.extractContent(msg);
+            System.out.println(getLocalName() + "received schedule!");
+            analiseSchedule(schedule);
+            ACLMessage reply = msg.createReply();
+            if (isGoodSchedule())
+            {
+                reply.setContent(IT_IS_GOOD_SCHEDULE);
+            }
+            else
+            {
+                schedule = getAlternativeSchedule(schedule);
+                reply.setContentObject(schedule);
+                reply.setContent(ALTERNATIVE_SCHEDULE);
+            }
+            send(reply);
         }
-        else
+        catch (UngroundedException e)
         {
-            schedule = getAlternativeSchedule(schedule);
-            reply.setContentObject(schedule);
-            reply.setContent(ALTERNATIVE_SCHEDULE);
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-        send(reply);
+        catch (Codec.CodecException e)
+        {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        catch (OntologyException e)
+        {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        catch(Exception e)
+        {
+            System.out.println("ERROR!!!! ='(");
+            System.out.println(e);
+            System.out.println("ERROR!!!! ='(");
+        }
     }
-
-    /**
+        /**
      * creates voting between agents from coalition
      * @throws UnreadableException
      * @throws IOException
@@ -368,7 +426,7 @@ public class ListenerAgent extends Agent
      * @param reports
      * @return
      */
-    private Report[] sortDyDescending (Report[] reports)
+    private Report[] sortByDescending (Report[] reports)
     {
         for (int i = 0; i < reports.length; i++)
         {
@@ -391,14 +449,16 @@ public class ListenerAgent extends Agent
      */
     private void analiseSchedule (Schedule schedule)
     {
-        for (Report report : schedule.reports)
+        for (int i = 0; i < schedule.reports.size(); i++)
         {
+            Report report;
+            report = (Report) schedule.reports.get(i);
             analysedSchedule[report.positionInSection][report.section] = report.clone();
         }
 
         for (int i = 0; i < Schedule.reportsInSections; i++)
         {
-            analysedSchedule[i] = sortDyDescending(analysedSchedule[i]);
+            analysedSchedule[i] = sortByDescending(analysedSchedule[i]);
         }
     }
 

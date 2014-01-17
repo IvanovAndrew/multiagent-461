@@ -1,11 +1,8 @@
 package ConferenceTask;
 
+import ConferenceTask.Ontology.Schedule;
 import jade.core.*;
 import jade.core.Runtime;
-import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAException;
-import jade.lang.acl.ACLMessage;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
