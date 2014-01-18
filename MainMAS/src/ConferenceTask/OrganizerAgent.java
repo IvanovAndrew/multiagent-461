@@ -18,6 +18,8 @@ import jade.wrapper.StaleProxyException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Random;
 
 /**
@@ -36,9 +38,12 @@ public class OrganizerAgent extends Agent implements MessageType
     private ArrayList<AgentController> mAgents = new ArrayList<AgentController>();
 
     private int mPolledAgentCount = 0;
-    private int mFinalRating = - 1;
+    private int mCurrentRating = - 1;
     private int mMaxRating = - 1;
     private int mIterationNumber = 0;
+
+    private Queue mLastBoss = new PriorityQueue();
+    private int mUpperBound = 2*Generator.listeners/3;
 
     protected void setup ()
     {
@@ -149,10 +154,10 @@ public class OrganizerAgent extends Agent implements MessageType
     {
         clearAgentsMemory();
 
-        Random random = new Random();
-        int idAgent = random.nextInt(mAgents.size());
+        int idAgent = getNewBoss();
         System.out.println("BOSS IS " + idAgent);
         AgentController boss = mAgents.get(idAgent);
+
 
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
         msg.setLanguage(mCodec.getName());
@@ -163,6 +168,24 @@ public class OrganizerAgent extends Agent implements MessageType
         content.setMessage(YOU_ARE_BOSS);
         mManager.fillContent(msg, content);
         send(msg);
+    }
+
+    private int getNewBoss()
+    {
+        Random random = new Random();
+
+        int idAgent = random.nextInt(mAgents.size());
+
+        if (mLastBoss.contains(idAgent))
+        {
+            idAgent = random.nextInt(mAgents.size());
+        }
+        if (mLastBoss.size() > mUpperBound)
+        {
+            mLastBoss.element();
+            mLastBoss.add(idAgent);
+        }
+        return idAgent;
     }
 
     private void clearAgentsMemory () throws Codec.CodecException, OntologyException, StaleProxyException
@@ -185,7 +208,7 @@ public class OrganizerAgent extends Agent implements MessageType
 
     private void poll (ACLMessage msg) throws OntologyException, Codec.CodecException, StaleProxyException
     {
-        mFinalRating = 0;
+        mCurrentRating = 0;
         ACLMessage pollMsg = new ACLMessage(ACLMessage.INFORM);
         pollMsg.setLanguage(mCodec.getName());
         pollMsg.setOntology(mOntology.getName());
@@ -207,7 +230,7 @@ public class OrganizerAgent extends Agent implements MessageType
 
     private void updatePoll (ACLMessage vote) throws OntologyException, Codec.CodecException, IOException, ControllerException
     {
-        mFinalRating += ((MessageContent) mManager.extractContent(vote)).getRating();
+        mCurrentRating += ((MessageContent) mManager.extractContent(vote)).getRating();
         mPolledAgentCount++;
 
         System.out.println(getLocalName() + " updates poll");
@@ -218,18 +241,20 @@ public class OrganizerAgent extends Agent implements MessageType
 
     private void compareSchedules () throws OntologyException, Codec.CodecException, ControllerException, IOException
     {
-        System.out.println(getLocalName() + " compares schedules");
-        if (mMaxRating < mFinalRating)
+        if (mMaxRating < mCurrentRating)
         {
-            mMaxRating = mFinalRating;
+            mMaxRating = mCurrentRating;
             mIterationNumber = 0;
+            System.out.println(getLocalName() + " new schedule is better! ");
         }
         else
         {
+            System.out.println(getLocalName() + " old schedule is better! ");
             mIterationNumber++;
         }
         mPolledAgentCount = 0;
-        mFinalRating = 0;
+        mCurrentRating = 0;
+        System.out.println(getLocalName() + " №iteration " + mIterationNumber);
         if (mIterationNumber < 5)
         {
             organise();
