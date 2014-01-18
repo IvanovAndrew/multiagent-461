@@ -15,6 +15,7 @@ public class MessageContent implements Predicate
     private String mMessage;
     private ArrayList mReports;
     private int mRating;
+    private int mCoalitionSize;
 
     public String getMessage()
     {
@@ -44,5 +45,15 @@ public class MessageContent implements Predicate
     public void setRating(int rating)
     {
         mRating = rating;
+    }
+
+    public void setCoalitionSize(int coalitionSize)
+    {
+        mCoalitionSize = coalitionSize;
+    }
+
+    public int getCoalitionSize()
+    {
+        return mCoalitionSize;
     }
 }

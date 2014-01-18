@@ -175,16 +175,10 @@ public class ListenerAgent extends Agent implements MessageType
      */
     private void updateVotes (String vote) throws UnreadableException, Codec.CodecException, OntologyException
     {
-        if (vote.equals(VOTE_YES))
-        {
-            mVoteYes++;
-        }
-        else
-        {
-            mVotesNo++;
-        }
+        if (vote.equals(VOTE_YES)) mVoteYes++;
+        else mVotesNo++;
 
-        System.out.println("Yes " + mVoteYes + " No " + mVotesNo + " coalition: " + mCoalition.size());
+//        System.out.println("Yes " + mVoteYes + " No " + mVotesNo + " coalition: " + mCoalition.size());
         if (mVoteYes + mVotesNo == mCoalition.size())
         {
             summarizeVoting();
@@ -195,6 +189,8 @@ public class ListenerAgent extends Agent implements MessageType
     {
         ACLMessage msg = mQueueMessages.get(0);
         mQueueMessages.remove(0);
+
+        System.out.println("Yes " + mVoteYes + " No " + mVotesNo + " coalition: " + mCoalition.size());
 
         if (mVoteYes >= mQuorum * mCoalition.size())
         {
@@ -295,7 +291,6 @@ public class ListenerAgent extends Agent implements MessageType
             System.out.println("from " + msg.getSender().getLocalName());
             throw new Exception("Cry");
         }
-
 
     }
 
@@ -448,7 +443,9 @@ public class ListenerAgent extends Agent implements MessageType
         msg.setOntology(mOntology.getName());
 
         msg.addReceiver(mOrganizerAID);
-        mManager.fillContent(msg, createMessage(FINISH, mCoalitionsSchedule.getReports()));
+        MessageContent msgContent = createMessage(FINISH, mCoalitionsSchedule.getReports());
+        msgContent.setCoalitionSize(mCoalition.size());
+        mManager.fillContent(msg, msgContent);
         send(msg);
     }
 

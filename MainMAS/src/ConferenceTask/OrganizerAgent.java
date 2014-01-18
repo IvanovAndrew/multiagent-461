@@ -43,7 +43,9 @@ public class OrganizerAgent extends Agent implements MessageType
     private int mIterationNumber = 0;
 
     private Queue mLastBoss = new PriorityQueue();
-    private int mUpperBound = 2*Generator.listeners/3;
+    private int mUpperBound = 2 * Generator.listeners / 3;
+
+    private ArrayList<Integer> mCoalitionSizes = new ArrayList<Integer>();
 
     protected void setup ()
     {
@@ -71,7 +73,7 @@ public class OrganizerAgent extends Agent implements MessageType
                 }
 
                 String name = ListenerAgent.prefixName + listener;
-                Object[] array = {listener, Object.class.cast(ratings)};
+                Object[] array = {listener, ratings};
                 AgentController newAgent = allListeners.createNewAgent(name, "ConferenceTask.ListenerAgent", array);
                 newAgent.start();
                 mAgents.add(newAgent);
@@ -111,7 +113,6 @@ public class OrganizerAgent extends Agent implements MessageType
                     {
                         String content;
                         content = ((MessageContent) mManager.extractContent(msg)).getMessage();
-                        System.out.println(getLocalName() + " received " + content);
                         if (content.equals(FINISH))
                         {
                             poll(msg);
@@ -158,7 +159,6 @@ public class OrganizerAgent extends Agent implements MessageType
         System.out.println("BOSS IS " + idAgent);
         AgentController boss = mAgents.get(idAgent);
 
-
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
         msg.setLanguage(mCodec.getName());
         msg.setOntology(mOntology.getName());
@@ -170,7 +170,7 @@ public class OrganizerAgent extends Agent implements MessageType
         send(msg);
     }
 
-    private int getNewBoss()
+    private int getNewBoss ()
     {
         Random random = new Random();
 
@@ -208,6 +208,9 @@ public class OrganizerAgent extends Agent implements MessageType
 
     private void poll (ACLMessage msg) throws OntologyException, Codec.CodecException, StaleProxyException
     {
+        MessageContent content = (MessageContent) mManager.extractContent(msg);
+        mCoalitionSizes.add(content.getCoalitionSize());
+        System.out.println(getLocalName() + " tries poll");
         mCurrentRating = 0;
         ACLMessage pollMsg = new ACLMessage(ACLMessage.INFORM);
         pollMsg.setLanguage(mCodec.getName());
@@ -225,7 +228,6 @@ public class OrganizerAgent extends Agent implements MessageType
 
         mManager.fillContent(pollMsg, msgContent);
         send(pollMsg);
-        System.out.println(getLocalName() + " tryes poll");
     }
 
     private void updatePoll (ACLMessage vote) throws OntologyException, Codec.CodecException, IOException, ControllerException
@@ -243,21 +245,30 @@ public class OrganizerAgent extends Agent implements MessageType
     {
         if (mMaxRating < mCurrentRating)
         {
+            System.out.println(getLocalName() + ": new schedule is better!");
             mMaxRating = mCurrentRating;
             mIterationNumber = 0;
-            System.out.println(getLocalName() + " new schedule is better! ");
         }
         else
         {
-            System.out.println(getLocalName() + " old schedule is better! ");
+            System.out.println(getLocalName() + " old schedule isn't worse! ");
             mIterationNumber++;
         }
         mPolledAgentCount = 0;
         mCurrentRating = 0;
         System.out.println(getLocalName() + " №iteration " + mIterationNumber);
-        if (mIterationNumber < 5)
+
+        if (mIterationNumber < 5) organise();
+        else announceResult();
+    }
+
+    private void announceResult()
+    {
+        System.out.println("Coalition sizes:");
+        for (int size : mCoalitionSizes)
         {
-            organise();
+            System.out.print(size + " ");
         }
+        System.out.println("\nSum of happy: " + mMaxRating);
     }
 }

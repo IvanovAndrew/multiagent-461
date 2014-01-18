@@ -16,7 +16,7 @@ public class Generator
     /**
      * количество слушателей
      */
-    public static final int listeners = 10;
+    public static final int listeners = 100;
     /**
      * количество потоков
      */

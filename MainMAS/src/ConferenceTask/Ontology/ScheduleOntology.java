@@ -23,6 +23,7 @@ public class ScheduleOntology extends Ontology
     public static final String MESSAGE = "message";
     public static final String REPORTS = "reports";
     public static final String RATING = "rating";
+    public static final String COALITION_SIZE = "coalitionSize";
 
     private static Ontology sTheInstance = new ScheduleOntology(BasicOntology.getInstance());
 
@@ -50,6 +51,7 @@ public class ScheduleOntology extends Ontology
             PredicateSchema schedulePredicate = new PredicateSchema(SCHEDULE_PREDICATE);
             schedulePredicate.add(MESSAGE, stringSchema, ObjectSchema.MANDATORY);
             schedulePredicate.add(RATING, integerSchema, ObjectSchema.OPTIONAL);
+            schedulePredicate.add(COALITION_SIZE, integerSchema, ObjectSchema.OPTIONAL);
             schedulePredicate.add(REPORTS, arrayReportsSchema, ObjectSchema.OPTIONAL);
 
             add(schedulePredicate, MessageContent.class);
