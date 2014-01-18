@@ -28,29 +28,29 @@ import java.util.ArrayList;
  */
 public class ListenerAgent extends Agent implements MessageType
 {
-    private ContentManager manager = (ContentManager) getContentManager();
-    private Codec codec = new SLCodec();
-    private Ontology ontology = ScheduleOntology.getInstance();
+    private ContentManager mManager = (ContentManager) getContentManager();
+    private Codec mCodec = new SLCodec();
+    private Ontology mOntology = ScheduleOntology.getInstance();
 
-    private final int minBound = Schedule.reportsCount / 2;
-    private int[] ratings = new int[Schedule.reportsCount];
-    private int minRatingThreshold;
+    private final int mMinBound = Schedule.reportsCount / 2;
+    private int[] mRatings = new int[Schedule.reportsCount];
+    private int mMinRatingThreshold;
 
-    private Schedule coalitionsSchedule;
-    private Report[][] analysedSchedule = new Report[Schedule.reportsInSections][Schedule.sections];
-    private ArrayList<AID> coalition = new ArrayList<AID>();
-    private double quorum = 0.67;
-    private int voteYes = 0;
-    private int votesNo = 0;
-    private boolean nowVoting = false;
-    private ArrayList<ACLMessage> queue = new ArrayList<ACLMessage>();
+    private Schedule mCoalitionsSchedule;
+    private Report[][] mAnalysedSchedule = new Report[Schedule.reportsInSections][Schedule.sections];
+    private ArrayList<AID> mCoalition = new ArrayList<AID>();
+    private double mQuorum = 0.67;
+    private int mVoteYes = 0;
+    private int mVotesNo = 0;
+    private boolean mNowVoting = false;
+    private ArrayList<ACLMessage> mQueueMessages = new ArrayList<ACLMessage>();
     public static String prefixName = "agent_";
-    private int myNumber;
+    private int mMyNumber;
 
-    boolean amBoss = false;
-    private int rejected;
+    private boolean mAmBoss;
+    private int mRejected;
 
-    private AID organisatorAID = new AID();
+    private AID mOrganizerAID = new AID();
 
     /**
      * Setup the agent.
@@ -58,16 +58,16 @@ public class ListenerAgent extends Agent implements MessageType
     protected void setup ()
     {
         System.out.println("Hello, I'm listener " + getLocalName());
-        manager.registerLanguage(codec);
-        manager.registerOntology(ontology);
+        mManager.registerLanguage(mCodec);
+        mManager.registerOntology(mOntology);
 
         Object[] args = getArguments();
 
         if (args != null && args.length > 0)
         {
-            myNumber = (Integer) args[0];
-            ratings = (int[]) args[1];
-            minRatingThreshold = calculateMinThreshold();
+            mMyNumber = (Integer) args[0];
+            mRatings = (int[]) args[1];
+            mMinRatingThreshold = calculateMinThreshold();
         }
 
         addBehaviour(new CyclicBehaviour(this)
@@ -79,27 +79,27 @@ public class ListenerAgent extends Agent implements MessageType
                 {
                     if (msg != null)
                     {
-                        MessageContent content = (MessageContent) manager.extractContent(msg);
-                        System.out.println(getLocalName() + " received " + content.message + " from " + msg.getSender().getLocalName());
-                        if (nowVoting)
+                        MessageContent content = (MessageContent) mManager.extractContent(msg);
+                        System.out.println(getLocalName() + " received " + content.getMessage() + " from " + msg.getSender().getLocalName());
+                        if (mNowVoting)
                         {
-                            if (content.message.equals(VOTE_YES) || content.message.equals(VOTE_NO))
+                            if (content.getMessage().equals(VOTE_YES) || content.getMessage().equals(VOTE_NO))
                             {
                                 updateVotes(msg.getContent());
                             }
-                            else if (content.message.equals(VOTING))
+                            else if (content.getMessage().equals(VOTING))
                             {
-                                queue.add(msg);
+                                mQueueMessages.add(msg);
                                 vote();
                             }
                             else
                             {
-                                queue.add(msg);
+                                mQueueMessages.add(msg);
                             }
                         }
                         else
                         {
-                            queue.add(msg);
+                            mQueueMessages.add(msg);
                             handleMessage();
                         }
                     }
@@ -122,10 +122,10 @@ public class ListenerAgent extends Agent implements MessageType
         for (int reportId = 0; reportId < schedule.reportsCount; reportId++)
         {
             Report report = new Report();
-            report.id = reportId;
-            report.section = reportId % schedule.sections;
-            report.positionInSection = reportId / schedule.sections;
-            schedule.reports.add(report);
+            report.setId(reportId);
+            report.setSection(reportId % schedule.sections);
+            report.setPositionInSection(reportId / schedule.sections);
+            schedule.add(report);
         }
         analiseSchedule(schedule);
 
@@ -140,7 +140,7 @@ public class ListenerAgent extends Agent implements MessageType
     private int calculateMinThreshold ()
     {
         int[] sortedArray;
-        sortedArray = ratings.clone();
+        sortedArray = mRatings.clone();
         for (int i = 0; i < sortedArray.length; i++)
         {
             for (int j = i + 1; j < sortedArray.length; j++)
@@ -154,7 +154,7 @@ public class ListenerAgent extends Agent implements MessageType
             }
         }
 
-        return sortedArray[minBound];
+        return sortedArray[mMinBound];
     }
 
     /**
@@ -168,16 +168,16 @@ public class ListenerAgent extends Agent implements MessageType
     {
         if (vote.equals(VOTE_YES))
         {
-            voteYes++;
+            mVoteYes++;
         }
         else
         {
-            votesNo++;
+            mVotesNo++;
         }
 
-        if (voteYes + votesNo == coalition.size())
+        if (mVoteYes + mVotesNo == mCoalition.size())
         {
-            if (voteYes >= quorum * coalition.size())
+            if (mVoteYes >= mQuorum * mCoalition.size())
             {
                 acceptNewSchedule();
                 acceptAgent();
@@ -186,7 +186,7 @@ public class ListenerAgent extends Agent implements MessageType
             {
                 rejectAgent();
             }
-            nowVoting = false;
+            mNowVoting = false;
         }
     }
 
@@ -197,8 +197,8 @@ public class ListenerAgent extends Agent implements MessageType
      */
     private void acceptNewSchedule () throws UnreadableException, Codec.CodecException, OntologyException
     {
-        ACLMessage oldMessage = queue.get(0);
-        coalitionsSchedule = new Schedule((MessageContent) manager.extractContent(oldMessage));
+        ACLMessage oldMessage = mQueueMessages.get(0);
+        mCoalitionsSchedule = new Schedule((MessageContent) mManager.extractContent(oldMessage));
     }
 
     /**
@@ -206,48 +206,48 @@ public class ListenerAgent extends Agent implements MessageType
      */
     private void acceptAgent () throws Codec.CodecException, OntologyException
     {
-        ACLMessage oldMessage = queue.get(0);
-        queue.remove(0);
+        ACLMessage oldMessage = mQueueMessages.get(0);
+        mQueueMessages.remove(0);
 
         System.out.println(oldMessage.getSender() + " was accepted");
-        coalition.add(oldMessage.getSender());
+        mCoalition.add(oldMessage.getSender());
         ACLMessage reply = oldMessage.createReply();
-        manager.fillContent(reply, createMessage(ACCEPT_AGENT));
+        mManager.fillContent(reply, createMessage(ACCEPT_AGENT));
         send(reply);
     }
 
     /**
-     * Sends to agent message about it is rejected
+     * Sends to agent message about it is mRejected
      */
     private void rejectAgent () throws Codec.CodecException, OntologyException
     {
-        ACLMessage oldMessage = queue.get(0);
-        queue.remove(0);
-        System.out.println(oldMessage.getSender() + " was rejected");
+        ACLMessage oldMessage = mQueueMessages.get(0);
+        mQueueMessages.remove(0);
+        System.out.println(oldMessage.getSender() + " was mRejected");
 
         ACLMessage reply = oldMessage.createReply();
-        manager.fillContent(reply, createMessage(REJECT_AGENT));
+        mManager.fillContent(reply, createMessage(REJECT_AGENT));
         send(reply);
-        rejected++;
+        mRejected++;
     }
 
     private void handleMessage () throws IOException, UnreadableException, Codec.CodecException, OntologyException, ControllerException
     {
-        while (! nowVoting && queue.size() > 0)
+        while (! mNowVoting && mQueueMessages.size() > 0)
         {
 //            System.out.println(getLocalName() + " while-true");
-            ACLMessage msg = queue.get(0);
-            String content = ((MessageContent) manager.extractContent(msg)).message;
+            ACLMessage msg = mQueueMessages.get(0);
+            String content = ((MessageContent) mManager.extractContent(msg)).getMessage();
 
             if (content.equals(NEW_ROUND))
             {
-                amBoss = false;
-                coalition = new ArrayList<AID>();
-                rejected = 0;
-                votesNo = 0;
-                voteYes = 0;
-                queue = new ArrayList<ACLMessage>();
-                organisatorAID = new AID();
+                mAmBoss = false;
+                mCoalition = new ArrayList<AID>();
+                mRejected = 0;
+                mVotesNo = 0;
+                mVoteYes = 0;
+                mQueueMessages = new ArrayList<ACLMessage>();
+                mOrganizerAID = new AID();
             }
             else if (content.equals(SAY_RATING))
             {
@@ -279,7 +279,7 @@ public class ListenerAgent extends Agent implements MessageType
             }
             else if (content.equals(ACCEPT_AGENT) || content.equals(REJECT_AGENT))
             {
-                queue.remove(0);
+                mQueueMessages.remove(0);
                 System.out.println(getLocalName() + " " + content);
             }
             else
@@ -288,45 +288,44 @@ public class ListenerAgent extends Agent implements MessageType
             }
         }
 //        System.out.println(getLocalName() + " while-false");
-//        if (amBoss) System.out.println("coalition size " + coalition.size());
-        if (amBoss && coalition.size() + rejected == Parser.listeners)
+//        if (mAmBoss) System.out.println("mCoalition size " + mCoalition.size());
+        if (mAmBoss && mCoalition.size() + mRejected == Generator.listeners)
         {
 //            System.out.println("Finish");
-            sayOrganisatorAboutFinish();
+            sayOrganizerAboutFinish();
         }
     }
 
     private void becomeBoss () throws Codec.CodecException, OntologyException, ControllerException
     {
-        organisatorAID = queue.get(0).getSender();
-        queue.remove(0);
-        amBoss = true;
-        coalition.add(getAID());
-        coalitionsSchedule = createFirstSchedule();
+        mOrganizerAID = mQueueMessages.get(0).getSender();
+        mQueueMessages.remove(0);
+        mAmBoss = true;
+        mCoalition.add(getAID());
+        mCoalitionsSchedule = createFirstSchedule();
 
         jade.wrapper.AgentContainer ac = getContainerController();
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-        for (int i = 0; i < Parser.listeners; i++)
+        for (int i = 0; i < Generator.listeners; i++)
         {
-            if (i == myNumber) continue;
+            if (i == mMyNumber) continue;
             AgentController agent = ac.getAgent(prefixName + i);
             msg.addReceiver(new AID(agent.getName(), AID.ISGUID));
         }
-        msg.setLanguage(codec.getName());
-        msg.setOntology(ontology.getName());
-        manager.fillContent(msg, createMessage(I_AM_BOSS));
+        msg.setLanguage(mCodec.getName());
+        msg.setOntology(mOntology.getName());
+        mManager.fillContent(msg, createMessage(I_AM_BOSS));
 
         send(msg);
     }
 
     private void writeToBoss () throws OntologyException, Codec.CodecException
     {
-        ACLMessage msg = queue.get(0);
-        queue.remove(0);
-        //String content = ((MessageContent) manager.extractContent(msg)).message;
+        ACLMessage msg = mQueueMessages.get(0);
+        mQueueMessages.remove(0);
 
         ACLMessage reply = msg.createReply();
-        manager.fillContent(reply, createMessage(I_AM_NEW));
+        mManager.fillContent(reply, createMessage(I_AM_NEW));
         send(reply);
         System.out.println(getLocalName() + " wrote to boss");
     }
@@ -337,14 +336,14 @@ public class ListenerAgent extends Agent implements MessageType
      */
     private void sendCurrentSchedule () throws IOException, Codec.CodecException, OntologyException
     {
-        ACLMessage msg = queue.get(0);
-        queue.remove(0);
+        ACLMessage msg = mQueueMessages.get(0);
+        mQueueMessages.remove(0);
         ACLMessage reply = msg.createReply();
 
-        reply.setLanguage(codec.getName());
-        reply.setOntology(ontology.getName());
+        reply.setLanguage(mCodec.getName());
+        reply.setOntology(mOntology.getName());
 
-        manager.fillContent(reply, createMessage(SCHEDULE, coalitionsSchedule.reports));
+        mManager.fillContent(reply, createMessage(SCHEDULE, mCoalitionsSchedule.getReports()));
         send(reply);
     }
 
@@ -387,12 +386,12 @@ public class ListenerAgent extends Agent implements MessageType
     private void thinkAboutSchedule () throws UnreadableException, IOException
     {
         System.out.println(getLocalName() + " thinks about schedule");
-        ACLMessage msg = queue.get(0);
-        queue.remove(0);
+        ACLMessage msg = mQueueMessages.get(0);
+        mQueueMessages.remove(0);
 
         try
         {
-            MessageContent schedulePredicate = (MessageContent) manager.extractContent(msg);
+            MessageContent schedulePredicate = (MessageContent) mManager.extractContent(msg);
             Schedule schedule = new Schedule(schedulePredicate);
             analiseSchedule(schedule);
 
@@ -408,10 +407,10 @@ public class ListenerAgent extends Agent implements MessageType
             {
                 System.out.println(getLocalName() + " creates alternative schedule");
                 schedule = getAlternativeSchedule(schedule);
-                content = createMessage(ALTERNATIVE_SCHEDULE, schedule.reports);
+                content = createMessage(ALTERNATIVE_SCHEDULE, schedule.getReports());
                 System.out.println(getLocalName() + " " + ALTERNATIVE_SCHEDULE);
             }
-            manager.fillContent(reply, content);
+            mManager.fillContent(reply, content);
             send(reply);
         }
         catch (UngroundedException e)
@@ -428,26 +427,26 @@ public class ListenerAgent extends Agent implements MessageType
         }
     }
 
-    private void sayOrganisatorAboutFinish () throws Codec.CodecException, OntologyException, ControllerException
+    private void sayOrganizerAboutFinish () throws Codec.CodecException, OntologyException, ControllerException
     {
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-        msg.setLanguage(codec.getName());
-        msg.setOntology(ontology.getName());
+        msg.setLanguage(mCodec.getName());
+        msg.setOntology(mOntology.getName());
 
-        msg.addReceiver(organisatorAID);
-        manager.fillContent(msg, createMessage(FINISH, coalitionsSchedule.reports));
+        msg.addReceiver(mOrganizerAID);
+        mManager.fillContent(msg, createMessage(FINISH, mCoalitionsSchedule.getReports()));
     }
 
     private void sayRating() throws OntologyException, Codec.CodecException
     {
-        ACLMessage msg = queue.get(0);
-        queue.remove(0);
-        Schedule schedule = new Schedule((MessageContent)manager.extractContent(msg));
+        ACLMessage msg = mQueueMessages.get(0);
+        mQueueMessages.remove(0);
+        Schedule schedule = new Schedule((MessageContent) mManager.extractContent(msg));
         analiseSchedule(schedule);
         int ratingOfSchedule = calcRatingOfSchedule();
 
         ACLMessage reply = msg.createReply();
-        manager.fillContent(reply, createMessage(RATING_OF_SCHEDULE, ratingOfSchedule));
+        mManager.fillContent(reply, createMessage(RATING_OF_SCHEDULE, ratingOfSchedule));
     }
 
     private int calcRatingOfSchedule ()
@@ -455,7 +454,7 @@ public class ListenerAgent extends Agent implements MessageType
         int sum = 0;
         for (int i = 0; i < Schedule.reportsInSections; i++)
         {
-            sum += ratings[analysedSchedule[i][0].id];
+            sum += mRatings[mAnalysedSchedule[i][0].getId()];
         }
         return sum;
     }
@@ -468,19 +467,19 @@ public class ListenerAgent extends Agent implements MessageType
      */
     private void createVoting () throws UnreadableException, IOException, OntologyException, Codec.CodecException
     {
-        ACLMessage msg = queue.get(0);
-        MessageContent pred = (MessageContent) manager.extractContent(msg);
+        ACLMessage msg = mQueueMessages.get(0);
+        MessageContent pred = (MessageContent) mManager.extractContent(msg);
 
-        MessageContent content = createMessage(VOTING, pred.reports);
+        MessageContent content = createMessage(VOTING, pred.getReports());
         ACLMessage voteMsg = new ACLMessage(ACLMessage.INFORM);
 
-        for (AID aid : coalition)
+        for (AID aid : mCoalition)
         {
             voteMsg.addReceiver(aid);
         }
-        manager.fillContent(voteMsg, content);
+        mManager.fillContent(voteMsg, content);
         send(voteMsg);
-        nowVoting = true;
+        mNowVoting = true;
     }
 
     /**
@@ -488,10 +487,10 @@ public class ListenerAgent extends Agent implements MessageType
      */
     private void vote () throws UnreadableException, OntologyException, Codec.CodecException
     {
-        ACLMessage msg = queue.get(0);
-        queue.remove(0);
+        ACLMessage msg = mQueueMessages.get(0);
+        mQueueMessages.remove(0);
 
-        MessageContent pred = (MessageContent) manager.extractContent(msg);
+        MessageContent pred = (MessageContent) mManager.extractContent(msg);
         Schedule schedule = new Schedule(pred);
 
         analiseSchedule(schedule);
@@ -500,7 +499,7 @@ public class ListenerAgent extends Agent implements MessageType
         MessageContent content;
         content = isGoodSchedule() ? createMessage(VOTE_YES) : createMessage(VOTE_NO);
 
-        manager.fillContent(reply, content);
+        mManager.fillContent(reply, content);
         send(reply);
     }
 
@@ -516,7 +515,7 @@ public class ListenerAgent extends Agent implements MessageType
         {
             for (int j = i + 1; j < reports.length; j++)
             {
-                if (ratings[reports[i].id] < ratings[reports[j].id])
+                if (mRatings[reports[i].getId()] < mRatings[reports[j].getId()])
                 {
                     Report temp = reports[i].clone();
                     reports[i] = reports[j];
@@ -533,16 +532,16 @@ public class ListenerAgent extends Agent implements MessageType
      */
     private void analiseSchedule (Schedule schedule)
     {
-        for (int i = 0; i < schedule.reports.size(); i++)
+        for (int i = 0; i < schedule.getReports().size(); i++)
         {
             Report report;
-            report = (Report) schedule.reports.get(i);
-            analysedSchedule[report.positionInSection][report.section] = report.clone();
+            report = (Report) schedule.getReports().get(i);
+            mAnalysedSchedule[report.getPositionInSection()][report.getSection()] = report.clone();
         }
 
         for (int i = 0; i < Schedule.reportsInSections; i++)
         {
-            analysedSchedule[i] = sortByDescending(analysedSchedule[i]);
+            mAnalysedSchedule[i] = sortByDescending(mAnalysedSchedule[i]);
         }
     }
 
@@ -561,14 +560,13 @@ public class ListenerAgent extends Agent implements MessageType
 
     /**
      * Checks if maximal rating in the time is greather than minimal bound
-     *
      * @param time
      * @return
      */
     private boolean isGoodTime (int time)
     {
-        Report report = analysedSchedule[time][0];
-        return ratings[report.id] >= minRatingThreshold;
+        Report report = mAnalysedSchedule[time][0];
+        return mRatings[report.getId()] >= mMinRatingThreshold;
     }
 
     /**
@@ -596,10 +594,10 @@ public class ListenerAgent extends Agent implements MessageType
         int index = - 1;
         for (int i = 0; i < Schedule.reportsInSections; i++)
         {
-            Report report = analysedSchedule[i][1];
-            if (ratings[report.id] > max)
+            Report report = mAnalysedSchedule[i][1];
+            if (mRatings[report.getId()] > max)
             {
-                max = ratings[report.id];
+                max = mRatings[report.getId()];
                 index = i;
             }
         }
@@ -616,28 +614,28 @@ public class ListenerAgent extends Agent implements MessageType
     {
         int index = GetSecondTopIndex();
 
-        Report badReport = analysedSchedule[badTime][2];
-        Report goodReport = analysedSchedule[index][1];
+        Report badReport = mAnalysedSchedule[badTime][2];
+        Report goodReport = mAnalysedSchedule[index][1];
 
-        schedule.reports.remove(badReport);
-        schedule.reports.remove(goodReport);
+        schedule.remove(badReport);
+        schedule.remove(goodReport);
 
         // do magic
-        int tempBadNumbInSect = badReport.positionInSection;
-        int tempBadSecNumb = badReport.section;
+        int tempBadNumbInSect = badReport.getPositionInSection();
+        int tempBadSecNumb = badReport.getSection();
 
-        badReport.positionInSection = goodReport.positionInSection;
-        badReport.section = goodReport.section;
+        badReport.setPositionInSection(goodReport.getPositionInSection());
+        badReport.setSection(goodReport.getSection());
 
-        goodReport.positionInSection = tempBadNumbInSect;
-        goodReport.section = tempBadSecNumb;
+        goodReport.setPositionInSection(tempBadNumbInSect);
+        goodReport.setSection(tempBadSecNumb);
         // end do magic
 
-        schedule.reports.add(badReport);
-        schedule.reports.add(goodReport);
+        schedule.add(badReport);
+        schedule.add(goodReport);
 
         // replace two reports in analysed schedule
-        analysedSchedule[badTime][2] = goodReport;
-        analysedSchedule[index][1] = badReport;
+        mAnalysedSchedule[badTime][2] = goodReport;
+        mAnalysedSchedule[index][1] = badReport;
     }
 }

@@ -1,6 +1,6 @@
 package ConferenceTask.Ontology;
 
-import ConferenceTask.Parser;
+import ConferenceTask.Generator;
 import jade.content.ContentElement;
 
 import jade.util.leap.ArrayList;
@@ -14,38 +14,38 @@ import jade.util.leap.ArrayList;
  */
 public class Schedule implements ContentElement
 {
-    public static final int sections = Parser.sections;
-    public static final int reportsCount = Parser.reports;
+    public static final int sections = Generator.sections;
+    public static final int reportsCount = Generator.reports;
     public static final int reportsInSections = reportsCount / sections;
 
-    public ArrayList reports;
+    private ArrayList mReports;
 
     public Schedule()
     {
-        reports = new ArrayList();
+        mReports = new ArrayList();
     }
 
     public Schedule(MessageContent obj)
     {
-        reports = obj.reports;
+        mReports = obj.getReports();
     }
 
     @Override
     public Schedule clone()
     {
         Schedule newSchedule = new Schedule ();
-        newSchedule.reports = (ArrayList) reports.clone ();
+        newSchedule.mReports = (ArrayList) mReports.clone ();
         return newSchedule;
     }
 
     public void setReports(ArrayList newReports)
     {
-        reports = newReports;
+        mReports = newReports;
     }
 
     public ArrayList getReports()
     {
-        return reports;
+        return mReports;
     }
 
     public int getSections()
@@ -61,5 +61,15 @@ public class Schedule implements ContentElement
     public int getReportsInSections()
     {
         return reportsInSections;
+    }
+
+    public void add (Report report)
+    {
+        mReports.add(report);
+    }
+
+    public void remove (Report badReport)
+    {
+        mReports.remove(badReport);
     }
 }

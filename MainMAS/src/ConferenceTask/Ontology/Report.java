@@ -11,49 +11,62 @@ import jade.content.Concept;
  */
 public class Report implements Concept
 {
-    public int id;
-    public int section;
-    public int positionInSection;
+    private int mId;
+    private int mSection;
+    private int mPositionInSection;
 
     @Override
     public Report clone()
     {
         Report newReport = new Report ();
 
-        newReport.id = id;
-        newReport.section = section;
-        newReport.positionInSection = positionInSection;
+        newReport.mId = mId;
+        newReport.mSection = mSection;
+        newReport.mPositionInSection = mPositionInSection;
 
         return newReport;
     }
 
     public int getId()
     {
-        return id;
+        return mId;
     }
 
     public void setId(int newId)
     {
-        id = newId;
+        mId = newId;
     }
 
     public int getSection()
     {
-        return section;
+        return mSection;
     }
 
     public void setSection(int newSection)
     {
-        section = newSection;
+        mSection = newSection;
     }
 
     public int getPositionInSection()
     {
-        return positionInSection;
+        return mPositionInSection;
     }
 
     public void setPositionInSection(int newPositionInSection)
     {
-        positionInSection = newPositionInSection;
+        mPositionInSection = newPositionInSection;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        System.out.println("equals");
+        if (obj.getClass() == Report.class)
+        {
+            Report report = (Report) obj;
+            return report.mId == mId;
+        }
+        return false;
+
     }
 }

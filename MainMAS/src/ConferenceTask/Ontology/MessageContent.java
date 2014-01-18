@@ -12,37 +12,37 @@ import jade.util.leap.ArrayList;
  */
 public class MessageContent implements Predicate
 {
-    public String message;
-    public ArrayList reports;
-    public int rating;
+    private String mMessage;
+    private ArrayList mReports;
+    private int mRating;
 
     public String getMessage()
     {
-        return message;
+        return mMessage;
     }
 
-    public void setMessage(String newMessage)
+    public void setMessage(String message)
     {
-        message = newMessage;
+        mMessage = message;
     }
 
-    public void setReports(ArrayList newReports)
+    public void setReports(ArrayList reports)
     {
-        reports = newReports;
+        mReports = reports;
     }
 
     public ArrayList getReports()
     {
-        return reports;
+        return mReports;
     }
 
     public int getRating()
     {
-        return rating;
+        return mRating;
     }
 
-    public void setRating(int newRating)
+    public void setRating(int rating)
     {
-        rating = newRating;
+        mRating = rating;
     }
 }
