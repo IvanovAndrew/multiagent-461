@@ -27,7 +27,7 @@ import java.util.Random;
  * Time: 22:37
  * To change this template use File | Settings | File Templates.
  */
-public class OrganisatorAgent extends Agent implements MessageType
+public class OrganizerAgent extends Agent implements MessageType
 {
     private ContentManager mManager = (ContentManager) getContentManager();
     private Codec mCodec = new SLCodec();
@@ -48,14 +48,13 @@ public class OrganisatorAgent extends Agent implements MessageType
         Object[] args = getArguments();
         String fileName = (args != null && args.length > 0) ? (String) args[0] : null;
 
-        int[][] matrix;
-
         jade.core.Runtime rt = Runtime.instance();
         ProfileImpl p = new ProfileImpl(false);
         AgentContainer allListeners = rt.createAgentContainer(p);
 
         try
         {
+            int[][] matrix;
             matrix = Generator.readMatrixFromFile(fileName);
 
             for (int listener = 0; listener < Generator.listeners; listener++)
@@ -101,12 +100,13 @@ public class OrganisatorAgent extends Agent implements MessageType
             public void action ()
             {
                 ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-                String content = null;
                 try
                 {
                     if (msg != null)
                     {
+                        String content;
                         content = ((MessageContent) mManager.extractContent(msg)).getMessage();
+                        System.out.println(getLocalName() + " received " + content);
                         if (content.equals(FINISH))
                         {
                             poll(msg);
@@ -187,7 +187,8 @@ public class OrganisatorAgent extends Agent implements MessageType
     {
         mFinalRating = 0;
         ACLMessage pollMsg = new ACLMessage(ACLMessage.INFORM);
-
+        pollMsg.setLanguage(mCodec.getName());
+        pollMsg.setOntology(mOntology.getName());
         for (AgentController agent : mAgents)
         {
             pollMsg.addReceiver(new AID(agent.getName(), AID.ISGUID));
@@ -201,20 +202,23 @@ public class OrganisatorAgent extends Agent implements MessageType
 
         mManager.fillContent(pollMsg, msgContent);
         send(pollMsg);
+        System.out.println(getLocalName() + " tryes poll");
     }
 
     private void updatePoll (ACLMessage vote) throws OntologyException, Codec.CodecException, IOException, ControllerException
     {
         mFinalRating += ((MessageContent) mManager.extractContent(vote)).getRating();
         mPolledAgentCount++;
-        if (mPolledAgentCount == mAgents.size())
-        {
-            compareSchedules();
-        }
+
+        System.out.println(getLocalName() + " updates poll");
+        System.out.println("polled: " + mPolledAgentCount);
+
+        if (mPolledAgentCount == mAgents.size()) compareSchedules();
     }
 
     private void compareSchedules () throws OntologyException, Codec.CodecException, ControllerException, IOException
     {
+        System.out.println(getLocalName() + " compares schedules");
         if (mMaxRating < mFinalRating)
         {
             mMaxRating = mFinalRating;

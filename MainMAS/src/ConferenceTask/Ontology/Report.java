@@ -60,7 +60,6 @@ public class Report implements Concept
     @Override
     public boolean equals(Object obj)
     {
-        System.out.println("equals");
         if (obj.getClass() == Report.class)
         {
             Report report = (Report) obj;
