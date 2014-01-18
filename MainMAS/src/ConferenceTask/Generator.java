@@ -1,9 +1,6 @@
 package ConferenceTask;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.Random;
 import java.util.StringTokenizer;
 
@@ -45,15 +42,16 @@ public class Generator
         Random random = new Random();
         try
         {
-            FileWriter writer = new FileWriter(filePath);
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(filePath)));
             for (int topic = 0; topic < reports; topic++)
             {
                 for (int listener = 0; listener < listeners; listener++)
                 {
-                    writer.write(String.format("{0}", random.nextInt(10) + separator));
+                    out.print(random.nextInt(10) + separator);
                 }
-                writer.write("\n");
+                out.println();
             }
+            out.flush();
         }
         catch (IOException e)
         {
@@ -91,10 +89,8 @@ public class Generator
             while (tokenizer.hasMoreTokens())
             {
                 String token = tokenizer.nextToken();
-                if (token.isEmpty())
-                {
-                    continue;
-                }
+                if (token.isEmpty()) continue;
+
                 matrix[lineNumber][i++] = Integer.parseInt(token);
             }
             lineNumber++;
