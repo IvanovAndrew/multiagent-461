@@ -25,7 +25,7 @@ public class Schedule implements ContentElement
         reports = new ArrayList();
     }
 
-    public Schedule(SchedulePredicate obj)
+    public Schedule(MessageContent obj)
     {
         reports = obj.reports;
     }

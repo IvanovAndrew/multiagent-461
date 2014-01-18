@@ -1,8 +1,16 @@
 package ConferenceTask;
 
-import ConferenceTask.Ontology.Schedule;
+import ConferenceTask.Ontology.*;
+import jade.content.ContentManager;
+import jade.content.lang.Codec;
+import jade.content.lang.sl.SLCodec;
+import jade.content.onto.Ontology;
+import jade.content.onto.OntologyException;
 import jade.core.*;
 import jade.core.Runtime;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
@@ -21,108 +29,212 @@ import java.util.Random;
  * Time: 22:37
  * To change this template use File | Settings | File Templates.
  */
-public class OrganisatorAgent extends Agent
+public class OrganisatorAgent extends Agent implements MessageType
 {
-    private final String agentName = "agent_";
-    private ArrayList<AgentController> agents = new ArrayList<AgentController> ();
+    public static String organisatorName = "organisator";
 
-    protected void setup()
+    private ContentManager manager = (ContentManager) getContentManager();
+    private Codec codec = new SLCodec();
+    private Ontology ontology = ScheduleOntology.getInstance();
+
+    private ArrayList<AgentController> agents = new ArrayList<AgentController>();
+
+    int polledAgentCount = 0;
+    int finalRating = - 1;
+    int maxRating = - 1;
+    int iterationNumber = 0;
+
+    protected void setup ()
     {
-        /*try
-        {
-            // create the agent description of itself
-            DFAgentDescription dfd = new DFAgentDescription();
-            dfd.setName(getAID());
-            // register the description with the DF
-            DFService.register (this, dfd);
-        }
-        catch (FIPAException e)
-        {
-            e.printStackTrace ();  //To change body of catch statement use File | Settings | File Templates.
-        }
-        System.out.println(getLocalName()+" REGISTERED WITH THE DF");
-        System.out.println(getLocalName()+" STARTED");*/
-        String fileName = "";
+        manager.registerLanguage(codec);
+        manager.registerOntology(ontology);
+        System.out.println(getLocalName() + " and AID " + getAID());
         Object[] args = getArguments();
-        if (args != null && args.length > 0)
-        {
-            fileName = (String) args[0];
-        }
-        else
-        {
-            fileName = "input.txt";
-        }
+        String fileName = (args != null && args.length > 0) ? (String) args[0] : "input.txt";
 
         int[][] matrix;
-        //AgentContainer allListeners = (AgentContainer)getContainerController();
-        jade.core.Runtime rt = Runtime.instance ();
-        ProfileImpl p = new ProfileImpl (false);
-        AgentContainer allListeners = rt.createAgentContainer (p);
+
+        jade.core.Runtime rt = Runtime.instance();
+        ProfileImpl p = new ProfileImpl(false);
+        AgentContainer allListeners = rt.createAgentContainer(p);
 
         try
         {
-            matrix = Parser.parse (new BufferedReader (new FileReader (fileName)));
-            Random random = new Random ();
-            int bossId = random.nextInt (Parser.listeners);
+            matrix = Parser.parse(new BufferedReader(new FileReader(fileName)));
+            //            Random random = new Random ();
+            //            int bossId = random.nextInt (Parser.listeners);
 
             for (int listener = 0; listener < Parser.listeners; listener++)
             {
-                int[] ratings = new int [Schedule.reportsCount];
+                int[] ratings = new int[Schedule.reportsCount];
                 for (int report = 0; report < Parser.reports; report++)
                 {
                     ratings[report] = matrix[report][listener];
                 }
 
                 String name = ListenerAgent.prefixName + listener;
-                Object[] array = {listener, bossId, Object.class.cast (ratings)};
-                AgentController newAgent = allListeners.createNewAgent (name, "ConferenceTask.ListenerAgent", array);
-                newAgent.start ();
-                agents.add (newAgent);
+                Object[] array = {listener, Object.class.cast(ratings)};
+                AgentController newAgent = allListeners.createNewAgent(name, "ConferenceTask.ListenerAgent", array);
+                newAgent.start();
+                agents.add(newAgent);
             }
 
-//            organise (allListeners);
+            organise();
         }
         catch (IOException e)
         {
-            System.out.println ("Incorrect name of file");
+            System.out.println("Incorrect name of file");
         }
         catch (StaleProxyException e)
         {
-            e.printStackTrace ();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         catch (ControllerException e)
         {
-            e.printStackTrace ();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        catch (Codec.CodecException e)
+        {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        catch (OntologyException e)
+        {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        addBehaviour(new CyclicBehaviour(this)
+        {
+            public void action ()
+            {
+                ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+                String content = null;
+                try
+                {
+                    if (msg != null)
+                    {
+                        content = ((MessageContent) manager.extractContent(msg)).getMessage();
+                        if (content.equals(FINISH))
+                        {
+                            poll(msg);
+                        }
+                        else if (content.equals(RATING_OF_SCHEDULE))
+                        {
+                            updatePoll(msg);
+                        }
+                    }
+                    else
+                    {
+                        block();
+                    }
+                }
+                catch (Codec.CodecException e)
+                {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                catch (OntologyException e)
+                {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                catch (StaleProxyException e)
+                {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                catch (ControllerException e)
+                {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+            }
+        });
+    }
+
+    private void organise () throws IOException, ControllerException, Codec.CodecException, OntologyException
+    {
+        clearAgentsMemory();
+
+        Random random = new Random();
+        int idAgent = random.nextInt(agents.size());
+        System.out.println("BOSS IS " + idAgent);
+        AgentController boss = agents.get(idAgent);
+
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.setLanguage(codec.getName());
+        msg.setOntology(ontology.getName());
+        msg.addReceiver(new AID(boss.getName(), AID.ISGUID));
+
+        MessageContent content = new MessageContent();
+        content.setMessage(YOU_ARE_BOSS);
+        manager.fillContent(msg, content);
+        send(msg);
+    }
+
+    private void clearAgentsMemory () throws Codec.CodecException, OntologyException, StaleProxyException
+    {
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.setLanguage(codec.getName());
+        msg.setOntology(ontology.getName());
+
+        for (AgentController agent : agents)
+        {
+            msg.addReceiver(new AID(agent.getName(), AID.ISGUID));
+        }
+
+        MessageContent msgContent = new MessageContent();
+        msgContent.setMessage(NEW_ROUND);
+
+        manager.fillContent(msg, msgContent);
+        send(msg);
+    }
+
+    private void poll (ACLMessage msg) throws OntologyException, Codec.CodecException, StaleProxyException
+    {
+        finalRating = 0;
+        ACLMessage pollMsg = new ACLMessage(ACLMessage.INFORM);
+
+        for (AgentController agent : agents)
+        {
+            pollMsg.addReceiver(new AID(agent.getName(), AID.ISGUID));
+        }
+
+        MessageContent msgContent = new MessageContent();
+        msgContent.setMessage(SAY_RATING);
+        jade.util.leap.ArrayList reports;
+        reports = ((MessageContent) manager.extractContent(msg)).getReports();
+        msgContent.setReports(reports);
+
+        manager.fillContent(pollMsg, msgContent);
+        send(pollMsg);
+    }
+
+    private void updatePoll (ACLMessage vote) throws OntologyException, Codec.CodecException, IOException, ControllerException
+    {
+        finalRating += ((MessageContent) manager.extractContent(vote)).getRating();
+        polledAgentCount++;
+        if (polledAgentCount == agents.size())
+        {
+            compareSchedules();
         }
     }
 
-    /*private void organise (jade.wrapper.AgentContainer ac) throws IOException, ControllerException
+    private void compareSchedules () throws OntologyException, Codec.CodecException, ControllerException, IOException
     {
-        Schedule schedule;
-        schedule = createFirstSchedule();
-
-        Random random = new Random ();
-        int idAgent = random.nextInt (agents.size ());
-        System.out.println ("BOSS IS " + idAgent);
-        AgentController  boss = ac.getAgent (ListenerAgent.prefixName + idAgent);
-
-        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-        msg.setContent (ListenerAgent.YOU_ARE_BOSS);
-        msg.setContentObject (schedule);
-        msg.addReceiver(new AID (boss.getName (), AID.ISGUID));
-
-        send (msg);
-        send (msg);
-        *//*
-        msg = new ACLMessage (ACLMessage.INFORM);
-        msg.setContentObject (idAgent);
-        msg.setContent (ListenerAgent.BOSS_NAME);
-
-        for (int i = 0; i < agents.size (); i++)
+        if (maxRating < finalRating)
         {
-            if (i == idAgent) continue;
-            msg.addReceiver (new AID (agentName + i, AID.ISLOCALNAME));
+            maxRating = finalRating;
+            iterationNumber = 0;
         }
-        send (msg);*//*
-    }*/
+        else
+        {
+            iterationNumber++;
+        }
+        polledAgentCount = 0;
+        finalRating = 0;
+        if (iterationNumber < 5)
+        {
+            organise();
+        }
+    }
 }

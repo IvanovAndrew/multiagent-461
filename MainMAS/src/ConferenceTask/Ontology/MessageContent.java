@@ -10,10 +10,11 @@ import jade.util.leap.ArrayList;
  * Time: 21:18
  * To change this template use File | Settings | File Templates.
  */
-public class SchedulePredicate implements Predicate
+public class MessageContent implements Predicate
 {
     public String message;
     public ArrayList reports;
+    public int rating;
 
     public String getMessage()
     {
@@ -33,5 +34,15 @@ public class SchedulePredicate implements Predicate
     public ArrayList getReports()
     {
         return reports;
+    }
+
+    public int getRating()
+    {
+        return rating;
+    }
+
+    public void setRating(int newRating)
+    {
+        rating = newRating;
     }
 }

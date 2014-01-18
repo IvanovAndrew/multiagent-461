@@ -12,16 +12,8 @@ import jade.content.schema.*;
  */
 public class ScheduleOntology extends Ontology
 {
-    // The name identifying this ontology
     public static final String ONTOLOGY_NAME = "Schedule-ontology";
     // VOCABULARY
-
-    // schedule class
-//    public static final String SCHEDULE = "Schedule";
-//    public static final String SCHEDULE_SECTIONS = "sections";
-//    public static final String SCHEDULE_REPORTSCOUNT = "reportsCount";
-//    public static final String SCHEDULE_REPORTSINSECTIONS = "reportsInSections";
-//    public static final String SCHEDULE_REPORTS = "reports";
 
     // Report class
     public static final String REPORT = "Report";
@@ -33,6 +25,7 @@ public class ScheduleOntology extends Ontology
     public static final String SCHEDULE_PREDICATE = "Schedule predicate";
     public static final String MESSAGE = "message";
     public static final String REPORTS = "reports";
+    public static final String RATING = "rating";
 
     // The singleton instance of this ontology
     private static Ontology theInstance = new ScheduleOntology(BasicOntology.getInstance());
@@ -52,13 +45,6 @@ public class ScheduleOntology extends Ontology
             PrimitiveSchema stringSchema = (PrimitiveSchema) getSchema(BasicOntology.STRING);
             AggregateSchema arrayReportsSchema = new AggregateSchema(BasicOntology.SEQUENCE);
 
-            // Structure of the schema for the schedule concept
-//            ConceptSchema scheduleSchema = new ConceptSchema(SCHEDULE);
-//            scheduleSchema.add(SCHEDULE_SECTIONS, integerSchema, ObjectSchema.MANDATORY);
-//            scheduleSchema.add(SCHEDULE_REPORTSCOUNT, integerSchema, ObjectSchema.MANDATORY);
-//            scheduleSchema.add(SCHEDULE_REPORTSINSECTIONS, integerSchema, ObjectSchema.MANDATORY);
-//            scheduleSchema.add(SCHEDULE_REPORTS, arrayReportsSchema, ObjectSchema.MANDATORY);
-
             // Structure of the schema for report concept
             ConceptSchema reportSchema = new ConceptSchema(REPORT);
             reportSchema.add(REPORT_ID, integerSchema, ObjectSchema.MANDATORY);
@@ -70,9 +56,10 @@ public class ScheduleOntology extends Ontology
 
             PredicateSchema schedulePredicate = new PredicateSchema(SCHEDULE_PREDICATE);
             schedulePredicate.add(MESSAGE, stringSchema, ObjectSchema.MANDATORY);
+            schedulePredicate.add(RATING, integerSchema, ObjectSchema.OPTIONAL);
             schedulePredicate.add(REPORTS, arrayReportsSchema, ObjectSchema.OPTIONAL);
 
-            add(schedulePredicate, SchedulePredicate.class);
+            add(schedulePredicate, MessageContent.class);
         }
         catch (OntologyException e)
         {

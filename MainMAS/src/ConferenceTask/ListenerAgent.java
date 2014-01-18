@@ -26,13 +26,10 @@ import java.util.ArrayList;
  * Time: 21:12
  * To change this template use File | Settings | File Templates.
  */
-public class ListenerAgent extends Agent implements Message
+public class ListenerAgent extends Agent implements MessageType
 {
-    // We handle contents
     private ContentManager manager = (ContentManager) getContentManager();
-    // This agent speaks the SL language
     private Codec codec = new SLCodec();
-
     private Ontology ontology = ScheduleOntology.getInstance();
 
     private final int minBound = Schedule.reportsCount / 2;
@@ -48,59 +45,29 @@ public class ListenerAgent extends Agent implements Message
     private boolean nowVoting = false;
     private ArrayList<ACLMessage> queue = new ArrayList<ACLMessage>();
     public static String prefixName = "agent_";
+    private int myNumber;
+
+    boolean amBoss = false;
+    private int rejected;
+
+    private AID organisatorAID = new AID();
 
     /**
      * Setup the agent.
      */
     protected void setup ()
     {
-//        System.out.println("Hello, I'm listener " + getLocalName());
+        System.out.println("Hello, I'm listener " + getLocalName());
         manager.registerLanguage(codec);
         manager.registerOntology(ontology);
 
         Object[] args = getArguments();
-        int bossId = 0;
-        boolean amBoss = false;
+
         if (args != null && args.length > 0)
         {
-            bossId = (Integer) args[1];
-            amBoss = (Integer) args[0] == bossId;
-            ratings = (int[]) args[2];
-        }
-
-        minRatingThreshold = calculateMinThreshold();
-
-        if (!amBoss)
-        {
-            try
-            {
-                jade.wrapper.AgentContainer ac = getContainerController();
-                AgentController agent = ac.getAgent(prefixName + bossId);
-                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-                msg.addReceiver(new AID(agent.getName(), AID.ISGUID));
-                msg.setLanguage(codec.getName());
-                msg.setOntology(ontology.getName());
-                manager.fillContent(msg, createMessage(I_AM_NEW));
-                send(msg);
-            }
-            catch (ControllerException e)
-            {
-                e.printStackTrace();
-            }
-            catch (Codec.CodecException e)
-            {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-            catch (OntologyException e)
-            {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        }
-        else
-        {
-            coalition.add(getAID());
-            coalitionsSchedule = createFirstSchedule();
-//            System.out.println(getLocalName() + " IS BOSS");
+            myNumber = (Integer) args[0];
+            ratings = (int[]) args[1];
+            minRatingThreshold = calculateMinThreshold();
         }
 
         addBehaviour(new CyclicBehaviour(this)
@@ -112,8 +79,8 @@ public class ListenerAgent extends Agent implements Message
                 {
                     if (msg != null)
                     {
-//                        System.out.println(getLocalName() + " received message " + msg.getContent() + " from " + msg.getSender());
-                        SchedulePredicate content = (SchedulePredicate) manager.extractContent(msg);
+                        MessageContent content = (MessageContent) manager.extractContent(msg);
+                        System.out.println(getLocalName() + " received " + content.message + " from " + msg.getSender().getLocalName());
                         if (nowVoting)
                         {
                             if (content.message.equals(VOTE_YES) || content.message.equals(VOTE_NO))
@@ -136,19 +103,21 @@ public class ListenerAgent extends Agent implements Message
                             handleMessage();
                         }
                     }
+                    else
+                    {
+                        block();
+                    }
                 }
                 catch (Exception e1)
                 {
                     e1.printStackTrace();
                 }
-                block();
             }
         });
     }
 
     private Schedule createFirstSchedule ()
     {
-//        System.out.println("createFirstSchedule starts");
         Schedule schedule = new Schedule();
         for (int reportId = 0; reportId < schedule.reportsCount; reportId++)
         {
@@ -160,7 +129,6 @@ public class ListenerAgent extends Agent implements Message
         }
         analiseSchedule(schedule);
 
-//        System.out.println("createFirstSchedule ends");
         return isGoodSchedule() ? schedule : getAlternativeSchedule(schedule);
     }
 
@@ -230,8 +198,7 @@ public class ListenerAgent extends Agent implements Message
     private void acceptNewSchedule () throws UnreadableException, Codec.CodecException, OntologyException
     {
         ACLMessage oldMessage = queue.get(0);
-        coalitionsSchedule = new Schedule((SchedulePredicate) manager.extractContent(oldMessage));
-        coalition.add(oldMessage.getSender());
+        coalitionsSchedule = new Schedule((MessageContent) manager.extractContent(oldMessage));
     }
 
     /**
@@ -241,10 +208,12 @@ public class ListenerAgent extends Agent implements Message
     {
         ACLMessage oldMessage = queue.get(0);
         queue.remove(0);
+
+        System.out.println(oldMessage.getSender() + " was accepted");
+        coalition.add(oldMessage.getSender());
         ACLMessage reply = oldMessage.createReply();
         manager.fillContent(reply, createMessage(ACCEPT_AGENT));
         send(reply);
-//        System.out.println(getLocalName() + " accepted new agent in coalition");
     }
 
     /**
@@ -254,54 +223,112 @@ public class ListenerAgent extends Agent implements Message
     {
         ACLMessage oldMessage = queue.get(0);
         queue.remove(0);
+        System.out.println(oldMessage.getSender() + " was rejected");
 
         ACLMessage reply = oldMessage.createReply();
         manager.fillContent(reply, createMessage(REJECT_AGENT));
         send(reply);
-//        System.out.println(getLocalName() + " rejected agent");
+        rejected++;
     }
 
-    private void handleMessage () throws IOException, UnreadableException, Codec.CodecException, OntologyException
+    private void handleMessage () throws IOException, UnreadableException, Codec.CodecException, OntologyException, ControllerException
     {
-//        System.out.println(getLocalName() + " handle Message");
         while (! nowVoting && queue.size() > 0)
         {
 //            System.out.println(getLocalName() + " while-true");
             ACLMessage msg = queue.get(0);
-            String content = ((SchedulePredicate) manager.extractContent(msg)).message;
+            String content = ((MessageContent) manager.extractContent(msg)).message;
 
-            if (content.equals(I_AM_NEW))
+            if (content.equals(NEW_ROUND))
             {
-//                System.out.println(getLocalName() + " received message "+ content);
+                amBoss = false;
+                coalition = new ArrayList<AID>();
+                rejected = 0;
+                votesNo = 0;
+                voteYes = 0;
+                queue = new ArrayList<ACLMessage>();
+                organisatorAID = new AID();
+            }
+            else if (content.equals(SAY_RATING))
+            {
+                sayRating();
+            }
+            else if (content.equals(YOU_ARE_BOSS))
+            {
+                becomeBoss();
+            }
+            else if (content.equals(I_AM_BOSS))
+            {
+                writeToBoss();
+            }
+            else if (content.equals(I_AM_NEW))
+            {
                 sendCurrentSchedule();
             }
             else if (content.equals(SCHEDULE))
             {
-//                System.out.println(getLocalName() + " received message "+ content);
-                createReply();
+                thinkAboutSchedule();
             }
             else if (content.equals(IT_IS_GOOD_SCHEDULE))
             {
-//                System.out.println(getLocalName() + " received message "+ content);
                 acceptAgent();
             }
             else if (content.equals(ALTERNATIVE_SCHEDULE))
             {
-//                System.out.println(getLocalName() + " received message "+ content);
                 createVoting();
             }
             else if (content.equals(ACCEPT_AGENT) || content.equals(REJECT_AGENT))
             {
-//                System.out.println(getLocalName() + " received message "+ content);
                 queue.remove(0);
+                System.out.println(getLocalName() + " " + content);
             }
             else
             {
                 System.out.println("Unrecognized type " + content);
-//                createReply();
             }
         }
-//        System.out.println(getLocalName() + " While-false");
+//        System.out.println(getLocalName() + " while-false");
+//        if (amBoss) System.out.println("coalition size " + coalition.size());
+        if (amBoss && coalition.size() + rejected == Parser.listeners)
+        {
+//            System.out.println("Finish");
+            sayOrganisatorAboutFinish();
+        }
+    }
+
+    private void becomeBoss () throws Codec.CodecException, OntologyException, ControllerException
+    {
+        organisatorAID = queue.get(0).getSender();
+        queue.remove(0);
+        amBoss = true;
+        coalition.add(getAID());
+        coalitionsSchedule = createFirstSchedule();
+
+        jade.wrapper.AgentContainer ac = getContainerController();
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        for (int i = 0; i < Parser.listeners; i++)
+        {
+            if (i == myNumber) continue;
+            AgentController agent = ac.getAgent(prefixName + i);
+            msg.addReceiver(new AID(agent.getName(), AID.ISGUID));
+        }
+        msg.setLanguage(codec.getName());
+        msg.setOntology(ontology.getName());
+        manager.fillContent(msg, createMessage(I_AM_BOSS));
+
+        send(msg);
+    }
+
+    private void writeToBoss () throws OntologyException, Codec.CodecException
+    {
+        ACLMessage msg = queue.get(0);
+        queue.remove(0);
+        //String content = ((MessageContent) manager.extractContent(msg)).message;
+
+        ACLMessage reply = msg.createReply();
+        manager.fillContent(reply, createMessage(I_AM_NEW));
+        send(reply);
+        System.out.println(getLocalName() + " wrote to boss");
     }
 
     /**
@@ -321,52 +348,68 @@ public class ListenerAgent extends Agent implements Message
         send(reply);
     }
 
-    private SchedulePredicate createMessage(String type)
+    private MessageContent createMessage (String type)
     {
-        return createMessage(type, null);
+        return createMessage(type, null, -1);
     }
 
-    private SchedulePredicate createMessage(String type, jade.util.leap.ArrayList reports)
+    private MessageContent createMessage(String type, jade.util.leap.ArrayList reports)
     {
-        SchedulePredicate schedulePredicate = new SchedulePredicate();
-        schedulePredicate.setMessage(type);
+        return createMessage(type, reports, -1);
+    }
+
+    private MessageContent createMessage(String type, int rating)
+    {
+        return createMessage(type, null, rating);
+    }
+
+    private MessageContent createMessage (String type, jade.util.leap.ArrayList reports, int rating)
+    {
+        MessageContent content = new MessageContent();
+        content.setMessage(type);
         if (reports != null)
         {
-            schedulePredicate.setReports(reports);
+            content.setReports(reports);
         }
-        return schedulePredicate;
+        if (rating > -1)
+        {
+            content.setRating(rating);
+        }
+        return content;
     }
 
     /**
      * agent analyzes the schedule and tells it like it or not
+     *
      * @throws UnreadableException
      * @throws IOException
      */
-    private void createReply () throws UnreadableException, IOException
+    private void thinkAboutSchedule () throws UnreadableException, IOException
     {
+        System.out.println(getLocalName() + " thinks about schedule");
         ACLMessage msg = queue.get(0);
         queue.remove(0);
 
         try
         {
-            SchedulePredicate schedulePredicate = (SchedulePredicate) manager.extractContent(msg);
-//            System.out.println(getLocalName() + " received schedule!");
+            MessageContent schedulePredicate = (MessageContent) manager.extractContent(msg);
             Schedule schedule = new Schedule(schedulePredicate);
             analiseSchedule(schedule);
 
             ACLMessage reply = msg.createReply();
-            SchedulePredicate content;
+            MessageContent content;
 
             if (isGoodSchedule())
             {
                 content = createMessage(IT_IS_GOOD_SCHEDULE);
-//                System.out.println(getLocalName() + " says " + IT_IS_GOOD_SCHEDULE);
+                System.out.println(getLocalName() + " thinks that " + IT_IS_GOOD_SCHEDULE);
             }
             else
             {
+                System.out.println(getLocalName() + " creates alternative schedule");
                 schedule = getAlternativeSchedule(schedule);
                 content = createMessage(ALTERNATIVE_SCHEDULE, schedule.reports);
-//                System.out.println(getLocalName() + " says " + ALTERNATIVE_SCHEDULE);
+                System.out.println(getLocalName() + " " + ALTERNATIVE_SCHEDULE);
             }
             manager.fillContent(reply, content);
             send(reply);
@@ -383,7 +426,38 @@ public class ListenerAgent extends Agent implements Message
         {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
+    }
 
+    private void sayOrganisatorAboutFinish () throws Codec.CodecException, OntologyException, ControllerException
+    {
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.setLanguage(codec.getName());
+        msg.setOntology(ontology.getName());
+
+        msg.addReceiver(organisatorAID);
+        manager.fillContent(msg, createMessage(FINISH, coalitionsSchedule.reports));
+    }
+
+    private void sayRating() throws OntologyException, Codec.CodecException
+    {
+        ACLMessage msg = queue.get(0);
+        queue.remove(0);
+        Schedule schedule = new Schedule((MessageContent)manager.extractContent(msg));
+        analiseSchedule(schedule);
+        int ratingOfSchedule = calcRatingOfSchedule();
+
+        ACLMessage reply = msg.createReply();
+        manager.fillContent(reply, createMessage(RATING_OF_SCHEDULE, ratingOfSchedule));
+    }
+
+    private int calcRatingOfSchedule ()
+    {
+        int sum = 0;
+        for (int i = 0; i < Schedule.reportsInSections; i++)
+        {
+            sum += ratings[analysedSchedule[i][0].id];
+        }
+        return sum;
     }
 
     /**
@@ -391,15 +465,14 @@ public class ListenerAgent extends Agent implements Message
      *
      * @throws UnreadableException
      * @throws IOException
-     * @todo
      */
     private void createVoting () throws UnreadableException, IOException, OntologyException, Codec.CodecException
     {
         ACLMessage msg = queue.get(0);
-        ACLMessage voteMsg = new ACLMessage(ACLMessage.INFORM);
-        SchedulePredicate pred = (SchedulePredicate) manager.extractContent(msg);
+        MessageContent pred = (MessageContent) manager.extractContent(msg);
 
-        SchedulePredicate content = createMessage(VOTING, pred.reports);
+        MessageContent content = createMessage(VOTING, pred.reports);
+        ACLMessage voteMsg = new ACLMessage(ACLMessage.INFORM);
 
         for (AID aid : coalition)
         {
@@ -412,28 +485,20 @@ public class ListenerAgent extends Agent implements Message
 
     /**
      * Agent from coalition votes yes or no
-     * @TODO  smth
      */
     private void vote () throws UnreadableException, OntologyException, Codec.CodecException
     {
         ACLMessage msg = queue.get(0);
         queue.remove(0);
 
-        SchedulePredicate pred = (SchedulePredicate) manager.extractContent(msg);
+        MessageContent pred = (MessageContent) manager.extractContent(msg);
         Schedule schedule = new Schedule(pred);
 
         analiseSchedule(schedule);
 
         ACLMessage reply = msg.createReply();
-        SchedulePredicate content;
-        if (isGoodSchedule())
-        {
-            content = createMessage(VOTE_YES);
-        }
-        else
-        {
-            content = createMessage(VOTE_NO);
-        }
+        MessageContent content;
+        content = isGoodSchedule() ? createMessage(VOTE_YES) : createMessage(VOTE_NO);
 
         manager.fillContent(reply, content);
         send(reply);
