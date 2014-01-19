@@ -242,12 +242,13 @@ public class OrganizerAgent extends Agent implements MessageType
 
     private void compareSchedules () throws OntologyException, Codec.CodecException, ControllerException, IOException
     {
-        mUsefulness.add(mCurrentRating);
+
         if (mMaxRating < mCurrentRating)
         {
             System.out.println(getLocalName() + ": new schedule is better!");
             mMaxRating = mCurrentRating;
             mIterationNumber = 0;
+            mUsefulness.add(mCurrentRating);
         }
         else
         {
