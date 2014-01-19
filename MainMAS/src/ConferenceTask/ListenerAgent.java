@@ -28,6 +28,8 @@ import java.util.ArrayList;
  */
 public class ListenerAgent extends Agent implements MessageType
 {
+    public static String prefixName = "agent_";
+
     private ContentManager mManager = (ContentManager) getContentManager();
     private Codec mCodec = new SLCodec();
     private Ontology mOntology = ScheduleOntology.getInstance();
@@ -38,18 +40,19 @@ public class ListenerAgent extends Agent implements MessageType
 
     private Schedule mCoalitionsSchedule;
     private Report[][] mAnalysedSchedule = new Report[Schedule.reportsInSections][Schedule.sections];
-    private ArrayList<AID> mCoalition = new ArrayList<AID>();
+
     private double mQuorum = 0.67;
     private int mVoteYes = 0;
     private int mVotesNo = 0;
     private boolean mNowVoting = false;
     private boolean mIsFinish = false;
-    private ArrayList<ACLMessage> mQueueMessages = new ArrayList<ACLMessage>();
-    public static String prefixName = "agent_";
+    private ArrayList<ACLMessage> mQueueMessages = new ArrayList<>();
+
     private int mMyNumber;
 
     private boolean mAmBoss;
     private int mRejected;
+    private ArrayList<AID> mCoalition = new ArrayList<>();
 
     private AID mOrganizerAID = new AID();
 
@@ -78,10 +81,7 @@ public class ListenerAgent extends Agent implements MessageType
                     {
                         MessageContent content = (MessageContent) mManager.extractContent(msg);
 
-                        if (content.getMessage().equals(VOTING))
-                        {
-                            vote(msg);
-                        }
+                        if (content.getMessage().equals(VOTING)) vote(msg);
 
                         else if (mNowVoting)
                         {
@@ -96,14 +96,9 @@ public class ListenerAgent extends Agent implements MessageType
                         }
                         else
                         {
-                            if (mQueueMessages.size() == 0)
-                            {
-                                handleMessage(msg);
-                            }
-                            else
-                            {
-                                mQueueMessages.add(msg);
-                            }
+                            if (mQueueMessages.size() == 0) handleMessage(msg);
+
+                            else mQueueMessages.add(msg);
                         }
                     }
                     else
@@ -178,11 +173,7 @@ public class ListenerAgent extends Agent implements MessageType
         if (vote.equals(VOTE_YES)) mVoteYes++;
         else mVotesNo++;
 
-//        System.out.println("Yes " + mVoteYes + " No " + mVotesNo + " coalition: " + mCoalition.size());
-        if (mVoteYes + mVotesNo == mCoalition.size())
-        {
-            summarizeVoting();
-        }
+        if (mVoteYes + mVotesNo == mCoalition.size()) summarizeVoting();
     }
 
     private void summarizeVoting () throws Codec.CodecException, UnreadableException, OntologyException
@@ -248,60 +239,40 @@ public class ListenerAgent extends Agent implements MessageType
     {
         String content = ((MessageContent) mManager.extractContent(msg)).getMessage();
 
-        if (content.equals(NEW_ROUND))
-        {
-            clear();
-        }
-        else if (content.equals(SAY_RATING))
-        {
-            //            System.out.println(getLocalName() + " received " + content + " from " + msg.getSender().getLocalName());
-            sayRating(msg);
-        }
-        else if (content.equals(YOU_ARE_BOSS))
-        {
-            becomeBoss(msg);
-        }
-        else if (content.equals(I_AM_BOSS))
-        {
-            writeToBoss(msg);
-        }
-        else if (content.equals(I_AM_NEW))
-        {
-            sendCurrentSchedule(msg);
-        }
-        else if (content.equals(SCHEDULE))
-        {
-            thinkAboutSchedule(msg);
-        }
-        else if (content.equals(IT_IS_GOOD_SCHEDULE))
-        {
-            acceptAgent(msg);
-        }
-        else if (content.equals(ALTERNATIVE_SCHEDULE))
-        {
-            createVoting(msg);
-        }
-        else if (content.equals(ACCEPT_AGENT) || content.equals(REJECT_AGENT))
-        {
-            //            mQueueMessages.remove(0);
-        }
+        if (content.equals(NEW_ROUND)) clear();
+
+        else if (content.equals(SAY_RATING)) sayRating(msg);
+
+        else if (content.equals(YOU_ARE_BOSS)) becomeBoss(msg);
+
+        else if (content.equals(I_AM_BOSS)) writeToBoss(msg);
+
+        else if (content.equals(I_AM_NEW)) sendCurrentSchedule(msg);
+
+        else if (content.equals(SCHEDULE)) thinkAboutSchedule(msg);
+
+        else if (content.equals(IT_IS_GOOD_SCHEDULE)) acceptAgent(msg);
+
+        else if (content.equals(ALTERNATIVE_SCHEDULE)) createVoting(msg);
+
+        else if (content.equals(ACCEPT_AGENT) || content.equals(REJECT_AGENT)); //do nothing
+
         else
         {
             System.out.println(getLocalName() + " unrecognized type " + content + " now voting " + mNowVoting + " amBoss " + mAmBoss);
             System.out.println("from " + msg.getSender().getLocalName());
-            throw new Exception("Cry");
+//            throw new Exception("Cry");
         }
-
     }
 
     private void clear ()
     {
         mAmBoss = false;
-        mCoalition = new ArrayList<AID>();
+        mCoalition = new ArrayList<>();
         mRejected = 0;
         mVotesNo = 0;
         mVoteYes = 0;
-        mQueueMessages = new ArrayList<ACLMessage>();
+        mQueueMessages = new ArrayList<>();
         mOrganizerAID = new AID();
         mIsFinish = false;
     }
@@ -473,7 +444,6 @@ public class ListenerAgent extends Agent implements MessageType
 
     /**
      * creates voting between agents from coalition
-     *
      * @throws UnreadableException
      * @throws IOException
      */

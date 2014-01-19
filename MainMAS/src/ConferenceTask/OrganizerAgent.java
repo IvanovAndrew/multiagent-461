@@ -113,14 +113,9 @@ public class OrganizerAgent extends Agent implements MessageType
                     {
                         String content;
                         content = ((MessageContent) mManager.extractContent(msg)).getMessage();
-                        if (content.equals(FINISH))
-                        {
-                            poll(msg);
-                        }
-                        else if (content.equals(RATING_OF_SCHEDULE))
-                        {
-                            updatePoll(msg);
-                        }
+
+                        if (content.equals(FINISH)) poll(msg);
+                        else if (content.equals(RATING_OF_SCHEDULE)) updatePoll(msg);
                     }
                     else
                     {
