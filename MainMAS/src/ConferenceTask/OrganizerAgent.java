@@ -45,7 +45,8 @@ public class OrganizerAgent extends Agent implements MessageType
     private Queue mLastBoss = new PriorityQueue();
     private int mUpperBound = 2 * Generator.listeners / 3;
 
-    private ArrayList<Integer> mCoalitionSizes = new ArrayList<Integer>();
+    private ArrayList<Integer> mCoalitionSizes = new ArrayList<>();
+    private ArrayList<Integer> mUsefulness = new ArrayList<>();
 
     protected void setup ()
     {
@@ -114,7 +115,10 @@ public class OrganizerAgent extends Agent implements MessageType
                         String content;
                         content = ((MessageContent) mManager.extractContent(msg)).getMessage();
 
-                        if (content.equals(FINISH)) poll(msg);
+                        if (content.equals(FINISH))
+                        {
+                            poll(msg);
+                        }
                         else if (content.equals(RATING_OF_SCHEDULE)) updatePoll(msg);
                     }
                     else
@@ -238,6 +242,7 @@ public class OrganizerAgent extends Agent implements MessageType
 
     private void compareSchedules () throws OntologyException, Codec.CodecException, ControllerException, IOException
     {
+        mUsefulness.add(mCurrentRating);
         if (mMaxRating < mCurrentRating)
         {
             System.out.println(getLocalName() + ": new schedule is better!");
@@ -254,16 +259,22 @@ public class OrganizerAgent extends Agent implements MessageType
         System.out.println(getLocalName() + " №iteration " + mIterationNumber);
 
         if (mIterationNumber < 5) organise();
+
         else announceResult();
     }
 
-    private void announceResult()
+    private void announceResult ()
     {
         System.out.println("Coalition sizes:");
         for (int size : mCoalitionSizes)
         {
             System.out.print(size + " ");
         }
-        System.out.println("\nSum of happy: " + mMaxRating);
+        System.out.println("\nUsefullness: ");
+        for (int usefullness : mUsefulness)
+        {
+            System.out.print(usefullness + " ");
+        }
+//        System.out.println("\nSum of happy: " + mMaxRating);
     }
 }
