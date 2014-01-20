@@ -429,7 +429,7 @@ public class ListenerAgent extends Agent implements MessageType
         ACLMessage reply = msg.createReply();
         mManager.fillContent(reply, createMessage(RATING_OF_SCHEDULE, ratingOfSchedule));
         send(reply);
-        System.out.println(getLocalName() + " sends rating " + ratingOfSchedule);
+//        System.out.println(getLocalName() + " sends rating " + ratingOfSchedule);
     }
 
     private int calcRatingOfSchedule ()

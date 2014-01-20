@@ -234,15 +234,13 @@ public class OrganizerAgent extends Agent implements MessageType
         mCurrentRating += ((MessageContent) mManager.extractContent(vote)).getRating();
         mPolledAgentCount++;
 
-        System.out.println(getLocalName() + " updates poll");
-        System.out.println("polled: " + mPolledAgentCount);
+        System.out.println(getLocalName() + " polled: " + mPolledAgentCount + " agents");
 
         if (mPolledAgentCount == mAgents.size()) compareSchedules();
     }
 
     private void compareSchedules () throws OntologyException, Codec.CodecException, ControllerException, IOException
     {
-
         if (mMaxRating < mCurrentRating)
         {
             System.out.println(getLocalName() + ": new schedule is better!");
@@ -276,6 +274,6 @@ public class OrganizerAgent extends Agent implements MessageType
         {
             System.out.print(usefullness + " ");
         }
-//        System.out.println("\nSum of happy: " + mMaxRating);
+        System.out.println("\nSum of happy: " + mMaxRating);
     }
 }
